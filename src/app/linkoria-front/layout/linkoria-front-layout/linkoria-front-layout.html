@@ -2,36 +2,18 @@
 
 <div class="flex h-[calc(100vh-64px)] overflow-hidden">
 
-  <aside class="w-64 bg-base-200 border-r border-base-300 hidden md:flex flex-col">
-    <div class="p-4 flex-1 overflow-y-auto">
-      <ul class="menu p-0 gap-2">
-        <li class="menu-title text-secondary">Canales Directos</li>
-        <li><a class="active"> <div class="w-4 h-4 bg-gray-500 rounded-full"></div> Amigos</a></li>
-        <li class="menu-title text-secondary mt-4">Mensajes Directos</li>
-        @for (i of [1,2,3]; track $index) {
-          <li>
-            <a class="flex items-center gap-3">
-              <div class="avatar online placeholder">
-                <div class="bg-neutral text-neutral-content w-8 rounded-full">
-                  <span class="text-xs">U{{i}}</span>
-                </div>
-              </div>
-              <span>Usuario {{i}}</span>
-            </a>
-          </li>
-        }
-      </ul>
-    </div>
+  <servers-navbar></servers-navbar>
 
-    <div class="p-2 bg-base-300 flex items-center gap-2">
-      <div class="avatar placeholder">
-        <div class="bg-secondary text-secondary-content w-8 rounded-full"><span>X</span></div>
-      </div>
-      <div class="text-xs font-bold truncate">Mi Usuario </div>
+  <aside class="w-60 bg-base-200 flex flex-col border-r border-black/5">
+    <div class="p-4 flex-1 overflow-y-auto">
+      <ul class="menu p-0 gap-1">
+        <li class="menu-title text-secondary text-[11px] uppercase tracking-wider">Mensajes directos</li>
+        </ul>
     </div>
   </aside>
 
-  <main class="flex-1 overflow-y-auto bg-base-100 p-4">
+  <main class="flex-1 bg-base-100 overflow-y-auto">
     <router-outlet></router-outlet>
   </main>
+
 </div>

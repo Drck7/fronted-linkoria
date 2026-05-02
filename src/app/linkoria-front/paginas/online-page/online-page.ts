@@ -1,8 +1,9 @@
 import { Component } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
-  selector: 'app-online-page',
-  imports: [],
+  selector: 'online-page',
+  imports: [RouterOutlet],
   templateUrl: './online-page.html',
 })
 export class OnlinePage { }

@@ -8,7 +8,14 @@
   "projects": {
     "fronted-linkoria": {
       "projectType": "application",
-      "schematics": {},
+      "schematics": {
+        "@schematics/angular:component": {
+          "inlineTemplate": false,
+          "inlineStyle": false,
+          "skipTests": false,
+          "style": "css"
+        }
+      },
       "root": "",
       "sourceRoot": "src",
       "prefix": "app",
