@@ -1,0 +1,25 @@
+<form class="flex flex-col items-center justify-center h-full" (submit)="onSubmit()" [formGroup]="loginForm">
+  <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+    <legend class="fieldset-legend">Login</legend>
+
+    <label class="label">Email</label>
+    <input type="email" class="input" placeholder="Email" formControlName="email" />
+
+    <label class="label">Password</label>
+    <input type="password" class="input" placeholder="Password" formControlName="password" />
+
+    <button class="btn btn-neutral mt-4" type="submit">Login</button>
+    <p class="text-sm mt-2">No tienes cuenta? <a routerLink="/auth/register" class="link link-primary">Regístrate</a></p>
+  </fieldset>
+</form>
+
+
+@if (hasError()) {
+  <div role="alert" class="alert alert-error animate-fade-in flex items-center gap-2">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 shrink-0 stroke-current" fill="none" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+    </svg>
+    <span>Error! Revise la información </span>
+  </div>
+
+}

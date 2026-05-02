@@ -15,7 +15,11 @@ export const linkoriaFrontRoutes = [
           component: HomePage
         },
         {
-          path: 'online/:online',
+          path: 'users/all',
+          component: HomePage
+        },
+        {
+          path: 'users/online',
           component: OnlinePage
         },
         {
