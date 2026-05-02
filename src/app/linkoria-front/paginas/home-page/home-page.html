@@ -1,2 +1,48 @@
-<p>home-page works!</p>
-<input type="text" placeholder="Buscar" class="input input-secondary" />
+<div class="p-4 flex flex-col gap-4">
+  <!-- Buscador conectado con [(ngModel)] -->
+  <div class="relative w-full">
+    <input
+      type="text"
+      [(ngModel)]="searchText"
+      placeholder="Buscar"
+      class="input input-secondary w-full bg-base-200 border-none focus:outline-none pl-10" />
+
+    <!-- Lupa decorativa (opcional) -->
+    <span class="absolute left-3 top-3 opacity-40">🔍</span>
+  </div>
+
+  <!-- Contador dinámico -->
+  <div class="text-[12px] font-bold text-base-content/60 uppercase mt-2">
+    Resultados encontrados — {{ amigosFiltrados.length }}
+  </div>
+
+  <div class="border-t border-base-content/5"></div>
+
+  <div class="flex flex-col gap-1">
+    <!-- Ahora iteramos sobre la lista FILTRADA -->
+    @for (amigo of amigosFiltrados; track amigo.nombre) {
+      <div class="flex items-center justify-between p-2 rounded-lg hover:bg-base-content/5 group cursor-pointer transition-colors">
+        <div class="flex items-center gap-3">
+          <div class="avatar" [ngClass]="amigo.estado">
+            <div class="bg-neutral w-10 rounded-full">
+              <img [src]="amigo.avatar" />
+            </div>
+          </div>
+          <div class="flex flex-col">
+            <span class="text-sm font-bold group-hover:text-white">{{ amigo.nombre }}</span>
+            <span class="text-xs text-base-content/60">{{ amigo.subtexto }}</span>
+          </div>
+        </div>
+
+        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button class="btn btn-circle btn-sm btn-ghost bg-base-300">⋮</button>
+        </div>
+      </div>
+    } @empty {
+      <!-- Mensaje si no hay resultados -->
+      <div class="text-center py-10 opacity-40">
+        <p>No se encontraron amigos que coincidan con "{{searchText}}"</p>
+      </div>
+    }
+  </div>
+</div>

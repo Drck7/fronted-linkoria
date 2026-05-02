@@ -3,15 +3,7 @@
 <div class="flex h-[calc(100vh-64px)] overflow-hidden">
 
   <servers-navbar></servers-navbar>
-
-  <aside class="w-60 bg-base-200 flex flex-col border-r border-black/5">
-    <div class="p-4 flex-1 overflow-y-auto">
-      <ul class="menu p-0 gap-1">
-        <li class="menu-title text-secondary text-[11px] uppercase tracking-wider">Mensajes directos</li>
-        </ul>
-    </div>
-  </aside>
-
+  <messages-navbar></messages-navbar>
   <main class="flex-1 bg-base-100 overflow-y-auto">
     <router-outlet></router-outlet>
   </main>
