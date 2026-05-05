@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from "@angular/router";
 import { FormBuilder,ReactiveFormsModule,Validators } from "@angular/forms";
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-login-pages',
@@ -17,6 +18,8 @@ export class LoginPages {
     password: ['', [Validators.required,Validators.minLength(6)]],
   })
 
+  AuthService = inject(AuthService)
+
   onSubmit(){
     if(this.loginForm.invalid) {
       this.hasError.set(true)
@@ -25,14 +28,13 @@ export class LoginPages {
         }, 2000);
       return
     }
-    this.isPosting.set(true)
-    setTimeout(() => {
-      this.isPosting.set(false)
-      this.hasError.set(true)
-    }, 2000);
 
     const{ email = '', password= '' } = this.loginForm.value;
     console.log({ email, password })
+
+    this.AuthService.login(email!,password!).subscribe(resp=>{
+      console.log(resp)
+    })
   }
 
 
