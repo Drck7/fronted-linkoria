@@ -2,7 +2,7 @@ import { computed, inject,Injectable, signal } from '@angular/core';
 import { User } from '../interfaces/user.interface';
 import { HttpClient } from '@angular/common/http';
 import { AuthResponse } from '../interfaces/auth-response.interface';
-import { pipe, tap } from 'rxjs';
+import { catchError, mapTo, Observable, of, tap } from 'rxjs';
 
 // Estados posibles de autenticación
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated'
@@ -24,13 +24,13 @@ export class AuthService {
   private http = inject(HttpClient)
 
   authStatus= computed<AuthStatus>(() => {
-    if(this.authStatus() === 'checking') return 'checking'
+    if(this._authStatus() === 'checking') return 'checking'
     if(this._user() === null) return 'not-authenticated'
     return 'authenticated'
   });
 
   user= computed(() => this._user());
-  token= computed(this._token);
+  token= computed(() => this._token());
 
   /**
    * Realiza el login del usuario con email y contraseña
@@ -38,7 +38,7 @@ export class AuthService {
    * @param password Contraseña del usuario
    * @returns Observable con la respuesta del servidor
    */
-  login(email: string, password: string) {
+  login(email: string, password: string):Observable<boolean> {
     return this.http.post<AuthResponse>(`${baseUrl}/auth/login`,{
       email:email,
       password:password }).pipe(
@@ -58,7 +58,14 @@ export class AuthService {
           localStorage.setItem('token',resp.accessToken);        // Token de acceso
           localStorage.setItem('refreshToken',resp.refreshToken); // Token para renovar
         }
-        )
-      )
+        ),
+        mapTo(true),
+        catchError((error: any)=>{
+          this._user.set(null);
+          this._authStatus.set('not-authenticated');
+          this._token.set(null);
+          return of(false)
+        })
+      );
     }
 }
