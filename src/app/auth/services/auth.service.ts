@@ -7,6 +7,13 @@ import { catchError, mapTo, Observable, of, tap } from 'rxjs'
 // Estados posibles de autenticación
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated'
 const baseUrl = 'http://localhost:8081/api/v1'
+const userStorageKey = 'authUser'
+
+type RefreshResponse = {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+}
 
 /**
  * Servicio de autenticación
@@ -19,7 +26,7 @@ export class AuthService {
   // Signal para guardar datos del usuario autenticado
   private _user = signal<User | null>(null)
   // Signal para guardar el token de acceso
-  private _token = signal<string | null>(null)
+  private _token = signal<string | null>(localStorage.getItem('token') )
 
   private http = inject(HttpClient)
 
@@ -32,27 +39,61 @@ export class AuthService {
   user= computed(() => this._user());
   token= computed(() => this._token());
 
+  // Lee el usuario guardado en localStorage para restaurar la sesión tras recargar la app.
+  private getStoredUser(): User | null {
+    const userRaw = localStorage.getItem(userStorageKey);
+
+    if (!userRaw) return null;
+
+    try {
+      return JSON.parse(userRaw) as User;
+    } catch {
+      localStorage.removeItem(userStorageKey);
+      return null;
+    }
+  }
+
+  // Guarda en memoria y en localStorage la sesión obtenida en login.
   private setSession(resp: AuthResponse) {
-    this._user.set({
+    const user: User = {
       userId: resp.userId,
       username: resp.username,
       tokenType: resp.tokenType
-    });
+    };
+
+    this._user.set(user);
     this._authStatus.set('authenticated');
+    this._token.set(resp.accessToken);
+    localStorage.setItem(userStorageKey, JSON.stringify(user));
+    localStorage.setItem('token', resp.accessToken);
+    localStorage.setItem('refreshToken', resp.refreshToken);
+  }
+
+  // Restaura el token nuevo devuelto por refresh sin perder el usuario ya guardado localmente.
+  private setSessionFromRefresh(resp: RefreshResponse) {
+    const storedUser = this.getStoredUser();
+
+    this._user.set(storedUser);
+    this._authStatus.set(storedUser ? 'authenticated' : 'not-authenticated');
     this._token.set(resp.accessToken);
     localStorage.setItem('token', resp.accessToken);
     localStorage.setItem('refreshToken', resp.refreshToken);
   }
 
-  private clearSession() {
+
+  // Limpia por completo la sesión local cuando el usuario cierra sesión o el refresh falla.
+  clearSession() {
     this._user.set(null);
     this._authStatus.set('not-authenticated');
     this._token.set(null);
+    localStorage.removeItem(userStorageKey);
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
   }
 
   /**
-   * Realiza el login del usuario con email y contraseña
+    * Realiza el login del usuario con email y contraseña.
+    * Se usa en la pantalla de acceso para crear la sesión inicial.
    * @param email Email del usuario
    * @param password Contraseña del usuario
    * @returns Observable con la respuesta del servidor
@@ -69,17 +110,41 @@ export class AuthService {
         })
       );
     }
+
+    /**
+     * Registra un usuario nuevo y deja la sesión iniciada si el backend responde con tokens.
+     * Se usa en la pantalla de registro para evitar obligar al usuario a hacer login manual.
+     */
+    register(username: string, email: string, password: string): Observable<boolean> {
+      return this.http.post<AuthResponse>(`${baseUrl}/auth/register`, {
+        username,
+        email,
+        password
+      }).pipe(
+        tap(resp => this.setSession(resp)),
+        mapTo(true),
+        catchError(() => {
+          this.clearSession();
+          return of(false);
+        })
+      );
+    }
+
+    /**
+     * Revalida la sesión al arrancar la app o al recargar la página.
+     * Si existe refreshToken, pide un accessToken nuevo al backend.
+     */
     checkStatus():Observable<boolean> {
       const refreshToken = localStorage.getItem('refreshToken');
       if(!refreshToken) {
-        this._authStatus.set('not-authenticated');
+        this.clearSession();
         return of(false);
       }
 
-      return this.http.post<AuthResponse>(`${baseUrl}/auth/refresh`, {
+      return this.http.post<RefreshResponse>(`${baseUrl}/auth/refresh`, {
         refreshToken
       }).pipe(
-        tap(resp => this.setSession(resp)),
+        tap(resp => this.setSessionFromRefresh(resp)),
         mapTo(true),
         catchError(() => {
           this.clearSession();
@@ -87,4 +152,5 @@ export class AuthService {
         })
       );
     }
+
 }

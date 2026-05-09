@@ -43,14 +43,27 @@
       </li>
     </ul>
   </div>
+  <!-- Datos y boton de login del usuario -->
   <div class="navbar-end gap-4">
-    <button class="btn btn-ghost btn-circle">
-      <!-- Nombre de usuario -->
-    </button>
+    @if(authService.authStatus() === 'authenticated') {
+      <button class="btn btn-ghost ">
+        {{ authService.user()?.username }}
+      </button>
+      <button class="btn btn-sm btn-error" (click)="authService.clearSession()">
+        Salir
+      </button>
+    }
+      @else if(authService.authStatus() === 'not-authenticated') {
+        <a class="btn btn-primary" routerLink="/auth/login" routerLinkActive="text-secondary">
+          Iniciar sesión
+        </a>
+      }
+      @else {
+        <a class="btn btn-ghost">...</a>
+      }
+
   </div>
 
-  <button class="btn btn-sm btn-error">
-    Salir
-  </button>
+
 
 </div>
