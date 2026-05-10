@@ -1,0 +1,109 @@
+<div class="p-4 flex flex-col gap-4 h-full">
+  <!-- Encabezado -->
+  <div class="flex items-center gap-4">
+    <button (click)="goBack()" class="btn btn-ghost btn-sm">
+      ← Volver
+    </button>
+    <h1 class="text-2xl font-bold">Añadir amigos</h1>
+  </div>
+
+  <!-- Buscador -->
+  <div class="relative w-full">
+    <input
+      type="text"
+      [value]="searchText()"
+      (input)="searchText.set($event.target.value); searchUsers()"
+      (keydown.enter)="searchUsers()"
+      placeholder="Busca por nombre o email"
+      class="input input-primary w-full bg-base-200 border-none focus:outline-none pl-10" />
+    <span class="absolute left-3 top-3 opacity-40">🔍</span>
+  </div>
+
+  <!-- Errores -->
+  @if (error()) {
+    <div class="alert alert-error">
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  <!-- Cargando -->
+  @if (isSearching()) {
+    <div class="flex justify-center items-center py-10">
+      <span class="loading loading-spinner loading-lg"></span>
+    </div>
+  }
+
+  <!-- Resultados -->
+  @if (!isSearching() && filteredResults().length > 0) {
+    <div class="space-y-2">
+      <p class="text-sm text-base-content/60">{{ filteredResults().length }} usuario(s) encontrado(s)</p>
+
+      <div class="flex flex-col gap-2 max-h-96 overflow-y-auto">
+        @for (user of filteredResults(); track user.userId) {
+          <div class="flex items-center justify-between p-3 rounded-lg bg-base-200/50 hover:bg-base-200 transition-colors">
+            <div class="flex items-center gap-3 flex-1">
+              <div class="avatar">
+                <div class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center">
+                  <span class="text-sm font-bold">{{ (user.username || 'U').slice(0, 1).toUpperCase() }}</span>
+                </div>
+              </div>
+
+              <div class="flex flex-col min-w-0">
+                <span class="text-sm font-medium">{{ user.username }}</span>
+                <span class="text-xs text-base-content/60 truncate">{{ user.email }}</span>
+              </div>
+            </div>
+
+            <!-- Botones según estado -->
+            @switch (getFriendshipStatus(user.userId)) {
+              @case ('amigos') {
+                <button class="btn btn-sm btn-ghost" disabled>
+                  ✓ Amigos
+                </button>
+              }
+              @case ('solicitud-enviada') {
+                <button class="btn btn-sm btn-ghost" disabled>
+                  ⏳ Solicitud enviada
+                </button>
+              }
+              @case ('solicitud-recibida') {
+                <button
+                  (click)="acceptFriendRequest(user.userId)"
+                  [disabled]="loadingRequestForUser() === user.userId"
+                  class="btn btn-sm btn-success gap-1">
+                  @if (loadingRequestForUser() === user.userId) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                  } @else {
+                    <span>✓</span>
+                  }
+                  Aceptar
+                </button>
+              }
+              @case ('no-amigos') {
+                <button
+                  (click)="addFriend(user.userId)"
+                  [disabled]="loadingRequestForUser() === user.userId"
+                  class="btn btn-sm btn-primary gap-1">
+                  @if (loadingRequestForUser() === user.userId) {
+                    <span class="loading loading-spinner loading-xs"></span>
+                  } @else {
+                    <span>➕</span>
+                  }
+                  Añadir
+                </button>
+              }
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Sin buscar aún -->
+  @if (!isSearching() && searchText().length === 0) {
+    <div class="flex flex-col items-center justify-center py-20 opacity-40">
+      <p class="text-lg font-semibold">Busca a alguien</p>
+      <p class="text-sm">Escribe el nombre o email de la persona que quieres añadir</p>
+    </div>
+  }
+</div>

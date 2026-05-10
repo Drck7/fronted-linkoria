@@ -4,45 +4,72 @@
     <input
       type="text"
       [(ngModel)]="searchText"
-      placeholder="Buscar"
+      placeholder="Buscar amigos"
       class="input input-secondary w-full bg-base-200 border-none focus:outline-none pl-10" />
 
     <!-- Lupa decorativa (opcional) -->
     <span class="absolute left-3 top-3 opacity-40">🔍</span>
   </div>
 
-  <!-- Contador dinámico -->
-  <div class="text-[12px] font-bold text-base-content/60 uppercase mt-2">
-    Resultados encontrados — {{ amigosFiltrados.length }}
-  </div>
+  <!-- Botón para añadir amigos -->
+  <button
+    (click)="irAAnadirAmigos()"
+    class="btn btn-sm btn-primary w-full gap-2">
+    <span>➕</span> Añadir amigo
+  </button>
 
-  <div class="border-t border-base-content/5"></div>
+  <!-- Contador dinámico -->
+  @if (amigosFiltrados.length > 0) {
+    <div class="text-[12px] font-bold text-base-content/60 uppercase mt-2">
+      Amigos encontrados — {{ amigosFiltrados.length }}
+    </div>
+
+    <div class="border-t border-base-content/5"></div>
+  }
 
   <div class="flex flex-col gap-1">
-    <!-- Ahora iteramos sobre la lista FILTRADA -->
-    @for (amigo of amigosFiltrados; track amigo.nombre) {
-      <div class="flex items-center justify-between p-2 rounded-lg hover:bg-base-content/5 group cursor-pointer transition-colors">
-        <div class="flex items-center gap-3">
-          <div class="avatar" [ngClass]="amigo.estado">
-            <div class="bg-neutral w-10 rounded-full">
-              <img [src]="amigo.avatar" />
-            </div>
-          </div>
-          <div class="flex flex-col">
-            <span class="text-sm font-bold group-hover:text-white">{{ amigo.nombre }}</span>
-            <span class="text-xs text-base-content/60">{{ amigo.subtexto }}</span>
-          </div>
-        </div>
-
-        <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button class="btn btn-circle btn-sm btn-ghost bg-base-300">⋮</button>
-        </div>
-      </div>
-    } @empty {
-      <!-- Mensaje si no hay resultados -->
+    @if (friendshipService.friends().length === 0) {
+      <!-- Sin amigos -->
       <div class="text-center py-10 opacity-40">
-        <p>No se encontraron amigos que coincidan con "{{searchText}}"</p>
+        <p class="mb-3">Sin amigos por ahora</p>
+        <p class="text-xs">¡Comienza a añadir amigos para chatear!</p>
+      </div>
+    } @else if (amigosFiltrados.length > 0) {
+      <!-- Amigos filtrados -->
+      @for (amigo of amigosFiltrados; track amigo.userId) {
+        <div
+          (click)="abrirChat(amigo.userId)"
+          class="flex items-center justify-between p-2 rounded-lg hover:bg-base-content/5 group cursor-pointer transition-colors active:scale-95">
+          <div class="flex items-center gap-3 flex-1">
+            <div class="avatar">
+              <div class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center">
+                <span class="text-sm font-bold">{{ (amigo.username || 'U').slice(0, 1).toUpperCase() }}</span>
+              </div>
+            </div>
+            <div class="flex flex-col flex-1 min-w-0">
+              <span class="text-sm font-bold group-hover:text-white">{{ amigo.username }}</span>
+              <span class="text-xs text-base-content/60 truncate">{{ amigo.subtitle || 'Disponible' }}</span>
+            </div>
+            @if (amigo.status) {
+              <div
+                class="w-2 h-2 rounded-full"
+                [class.bg-green-500]="amigo.status === 'online'"
+                [class.bg-yellow-500]="amigo.status === 'idle'"
+                [class.bg-gray-400]="amigo.status === 'offline'"></div>
+            }
+          </div>
+
+          <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <button class="btn btn-circle btn-sm btn-ghost bg-base-300" (click)="$event.stopPropagation()">⋮</button>
+          </div>
+        </div>
+      }
+    } @else {
+      <!-- No hay resultados de búsqueda -->
+      <div class="text-center py-10 opacity-40">
+        <p>No se encontraron amigos que coincidan con "{{ searchText }}"</p>
       </div>
     }
   </div>
 </div>
+

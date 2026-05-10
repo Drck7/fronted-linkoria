@@ -158,6 +158,41 @@ export class ChatService {
   }
 
   /**
+   * Abre o crea una conversación directa con un usuario específico
+   * Útil para cuando se clickea en un amigo y se quiere abrir el chat
+   */
+  openConversationWithUser(userId: string): void {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    this.httpService.createOrGetConversation(userId).subscribe({
+      next: (conversation) => {
+        const formattedConv = this.formatConversation(conversation);
+
+        // Agregar a la lista si es nueva
+        this.conversationsSignal.update((convs) => {
+          const exists = convs.find((c) => c.id === formattedConv.id);
+          if (exists) {
+            // Ya existe, solo actualizar
+            return convs.map((c) => (c.id === formattedConv.id ? formattedConv : c));
+          }
+          // Nueva conversación
+          return [formattedConv, ...convs];
+        });
+
+        // Establecer como conversación actual
+        this.currentConversationSignal.set(formattedConv);
+        this.loadingSignal.set(false);
+      },
+      error: (error) => {
+        console.error('Error opening conversation:', error);
+        this.errorSignal.set('No se pudo abrir la conversación');
+        this.loadingSignal.set(false);
+      },
+    });
+  }
+
+  /**
    * Carga los mensajes de una conversación
    */
   loadMessages(conversationId: number): void {

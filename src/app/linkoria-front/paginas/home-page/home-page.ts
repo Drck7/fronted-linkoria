@@ -1,27 +1,50 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms'; // <--- Importante para que funcione el buscador
+import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
+import { FriendshipService } from '../../../shared/services/friendship.service';
+import { ChatService } from '../../../chat/services/chat.service';
 
 @Component({
   selector: 'app-home-page',
   standalone: true,
-  imports: [CommonModule, FormsModule], // <--- Añade FormsModule aquí
+  imports: [CommonModule, FormsModule],
   templateUrl: './home-page.html',
 })
 export class HomePage {
-  searchText: string = ''; // Aquí guardaremos lo que escribas
+  readonly friendshipService = inject(FriendshipService);
+  private readonly chatService = inject(ChatService);
+  private readonly router = inject(Router);
 
-  // Lista original (la fuente de verdad)
-  amigosOriginal = [
-    { nombre: '! Marcos Shadow', estado: 'online', subtexto: 'Jugando a Rust', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Marcos' },
-    { nombre: '! Armint', estado: 'online', subtexto: 'Minecraft Time', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Armin' },
-    { nombre: '.LeoCy.', estado: 'offline', subtexto: 'Desconectado', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Leo' }
-  ];
+  searchText: string = '';
 
-  // Esta es la función que usaremos en el HTML para mostrar solo los filtrados
+  /**
+   * Filtra amigos según el texto de búsqueda
+   */
   get amigosFiltrados() {
-    return this.amigosOriginal.filter(amigo =>
-      amigo.nombre.toLowerCase().includes(this.searchText.toLowerCase())
+    return this.friendshipService.friends().filter((amigo) =>
+      amigo.username.toLowerCase().includes(this.searchText.toLowerCase())
     );
+  }
+
+  /**
+   * Al clickear en un amigo, abre el chat con él
+   */
+  abrirChat(userId: string): void {
+    this.chatService.openConversationWithUser(userId);
+    // Navegar al chat
+    setTimeout(() => {
+      const conversation = this.chatService.currentConversation();
+      if (conversation) {
+        this.router.navigate(['/chat', conversation.id]);
+      }
+    }, 100);
+  }
+
+  /**
+   * Navega a la página de búsqueda de usuarios para añadir amigos
+   */
+  irAAnadirAmigos(): void {
+    this.router.navigate(['/users/search']);
   }
 }
