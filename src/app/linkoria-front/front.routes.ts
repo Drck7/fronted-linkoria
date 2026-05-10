@@ -23,6 +23,10 @@ export const linkoriaFrontRoutes = [
           component: OnlinePage
         },
         {
+          path: 'chat',
+          loadChildren: () => import('../chat/chat.routes')
+        },
+        {
           path: 'pending/:pending',
           component: PendingPages
         },

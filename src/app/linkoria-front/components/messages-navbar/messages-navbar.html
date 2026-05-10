@@ -1,8 +1,56 @@
-<aside class="w-60 bg-base-200 flex flex-col border-r border-black/5 h-full">
-    <div class="p-4 flex-1 overflow-y-auto">
-      <ul class="menu p-0 gap-1">
-        <li class="menu-title text-secondary text-[11px] uppercase tracking-wider">Mensajes directos</li>
-        </ul>
-    </div>
+<aside class="flex h-full w-64 flex-col border-r border-black/5 bg-base-200">
+  <div class="border-b border-black/5 px-4 py-3">
+    <p class="text-[11px] font-semibold uppercase tracking-[0.2em] text-secondary">Mensajes directos</p>
+    <p class="mt-1 text-xs text-base-content/60">Chats privados y conversaciones recientes</p>
+  </div>
+
+  <div class="flex-1 overflow-y-auto p-2">
+    <ul class="menu gap-1 p-0">
+      <li>
+        <a
+          routerLink="/chat"
+          [routerLinkActiveOptions]="{ exact: true }"
+          routerLinkActive="bg-base-100 text-base-content shadow-sm"
+          class="rounded-2xl px-3 py-3"
+        >
+          <span class="flex flex-col items-start">
+            <span class="text-sm font-medium">Vista general</span>
+            <span class="text-xs text-base-content/60">Abrir el chat principal</span>
+          </span>
+        </a>
+      </li>
+
+      @for (conversation of conversations(); track conversation.id) {
+        <li>
+          <a
+            [routerLink]="['/chat', conversation.id]"
+            [routerLinkActiveOptions]="{ exact: true }"
+            routerLinkActive="bg-base-100 text-base-content shadow-sm"
+            class="rounded-2xl px-3 py-3"
+          >
+            <div class="flex w-full items-center gap-3">
+              <div class="avatar">
+                <div class="w-10 rounded-full bg-secondary text-secondary-content">
+                  <span class="text-xs font-bold">
+                    {{ (conversation.participant?.username ?? 'C').slice(0, 1).toUpperCase() }}
+                  </span>
+                </div>
+              </div>
+
+              <div class="min-w-0 flex-1 text-left">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="truncate text-sm font-medium">{{ conversation.participant?.username ?? 'Conversación' }}</span>
+                  @if ((conversation.unreadCount ?? 0) > 0) {
+                    <span class="badge badge-secondary badge-sm">{{ conversation.unreadCount }}</span>
+                  }
+                </div>
+                <p class="truncate text-xs text-base-content/60">{{ conversation.lastMessagePreview ?? 'Sin mensajes' }}</p>
+              </div>
+            </div>
+          </a>
+        </li>
+      }
+    </ul>
+  </div>
 </aside>
 

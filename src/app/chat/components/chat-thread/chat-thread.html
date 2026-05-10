@@ -1,0 +1,56 @@
+<section class="flex h-full flex-col bg-base-100">
+  @if (conversation(); as conversation) {
+    @if (conversation.participant; as participant) {
+      <header class="flex items-center justify-between gap-4 border-b border-black/5 px-6 py-4">
+        <div class="flex items-center gap-3">
+          <div class="avatar">
+            <div class="w-11 rounded-full bg-secondary text-secondary-content">
+              <span class="text-sm font-semibold">
+                {{ participant.username.slice(0, 1).toUpperCase() }}
+              </span>
+            </div>
+          </div>
+
+          <div>
+            <h1 class="text-lg font-semibold text-base-content">{{ participant.username }}</h1>
+            <p class="text-sm text-base-content/60">{{ participant.subtitle }}</p>
+          </div>
+        </div>
+
+        <span
+          class="badge badge-outline"
+          [class.badge-success]="participant.status === 'online'"
+          [class.badge-warning]="participant.status === 'idle'"
+          [class.badge-ghost]="participant.status === 'offline'"
+        >
+          {{ participant.status }}
+        </span>
+      </header>
+    }
+
+    <div class="flex-1 space-y-3 overflow-y-auto bg-base-200/40 px-6 py-5">
+      @for (message of conversation.messages; track message.messageId) {
+        <div class="flex" [class.justify-end]="message.isMine">
+          <article
+            class="max-w-[75%] rounded-3xl px-4 py-3 shadow-sm"
+            [class.bg-secondary]="message.isMine"
+            [class.text-secondary-content]="message.isMine"
+            [class.bg-base-100]="!message.isMine"
+          >
+            <p class="text-sm leading-relaxed">{{ message.content }}</p>
+            <span class="mt-2 block text-[11px] opacity-70">{{ message.sentAtLabel }}</span>
+          </article>
+        </div>
+      }
+    </div>
+  } @else {
+    <div class="flex h-full flex-col items-center justify-center gap-4 bg-base-100 px-6 text-center">
+      <div class="max-w-md space-y-2">
+        <h1 class="text-2xl font-semibold text-base-content">No hay conversación seleccionada</h1>
+        <p class="text-base-content/60">
+          Elige un contacto en la columna izquierda para abrir un hilo y empezar a enviar mensajes.
+        </p>
+      </div>
+    </div>
+  }
+</section>
