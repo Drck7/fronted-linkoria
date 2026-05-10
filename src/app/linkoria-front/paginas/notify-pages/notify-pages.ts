@@ -9,7 +9,7 @@ import { FriendshipService } from '../../../shared/services/friendship.service';
   templateUrl: './notify-pages.html',
 })
 export class NotifyPage {
-  readonly friendshipService = inject(FriendshipService);
+  readonly friendshipService: FriendshipService = inject(FriendshipService);
 
   refresh(): void {
     this.friendshipService.loadPendingRequests();

@@ -12,7 +12,7 @@ import { ChatService } from '../../../chat/services/chat.service';
   templateUrl: './home-page.html',
 })
 export class HomePage {
-  readonly friendshipService = inject(FriendshipService);
+  readonly friendshipService: FriendshipService = inject(FriendshipService);
   private readonly chatService = inject(ChatService);
   private readonly router = inject(Router);
 
