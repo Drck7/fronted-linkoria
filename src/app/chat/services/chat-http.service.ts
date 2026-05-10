@@ -71,6 +71,25 @@ export class ChatHttpService {
   }
 
   /**
+   * Envía un mensaje a una conversación
+   */
+  sendMessage(
+    conversationId: number,
+    content: string,
+    messageType: 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO' | 'AUDIO' = 'TEXT',
+    replyToMessageId: number | null = null
+  ): Observable<ChatMessage> {
+    return this.http.post<ChatMessage>(
+      `${API_BASE_URL}/conversations/${conversationId}/messages`,
+      {
+        content,
+        messageType,
+        replyToMessageId,
+      }
+    );
+  }
+
+  /**
    * Busca usuarios por nombre para iniciar nuevas conversaciones
    */
   searchUsers(username: string): Observable<any[]> {

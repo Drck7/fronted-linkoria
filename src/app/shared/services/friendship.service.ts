@@ -1,7 +1,8 @@
 import { Injectable, inject, signal, computed, effect } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap, switchMap, of } from 'rxjs';
+import { Observable, forkJoin, tap } from 'rxjs';
 import { AuthService } from '../../auth/services/auth.service';
+import { UserService } from './user.service';
 
 const API_BASE_URL = 'http://localhost:8081/api/v1';
 
@@ -55,10 +56,15 @@ interface RawFriendship {
   receiverUsername?: string;
 }
 
+function normalizeId(value: string | number | undefined, fallback: string): string {
+  return String(value ?? fallback);
+}
+
 @Injectable({ providedIn: 'root' })
 export class FriendshipService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
+  private readonly userService = inject(UserService);
 
   private readonly friendsSignal = signal<FriendUser[]>([]);
   private readonly pendingSentSignal = signal<Friendship[]>([]);
@@ -91,22 +97,64 @@ export class FriendshipService {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
-    this.http.get<RawFriendUser[]>(`${API_BASE_URL}/friendships/friends`).subscribe({
-      next: (friends) => {
-        this.friendsSignal.set(
-          friends.map((friend, index) => ({
-            userId: String(friend.userId ?? friend.id ?? friend.user_id ?? `friend-${index}`),
-            username: friend.username ?? 'Amigo',
-            email: friend.email ?? '',
-            avatarUrl: friend.avatarUrl,
-            isActive: friend.isActive ?? false,
-            subtitle: friend.subtitle,
-            status: friend.status as 'online' | 'idle' | 'offline' | undefined,
-            createdAt: friend.createdAt ?? '',
-            updatedAt: friend.updatedAt ?? '',
-          }))
+    this.http.get<RawFriendship[]>(`${API_BASE_URL}/friendships/friends`).subscribe({
+      next: (friendships) => {
+        const currentUserId = this.authService.user()?.userId;
+        const friendIds = Array.from(
+          new Set(
+            friendships
+              .map((friendship) => {
+                const senderId = normalizeId(friendship.senderId ?? friendship.sender_id, '');
+                const receiverId = normalizeId(friendship.receiverId ?? friendship.receiver_id, '');
+
+                if (!currentUserId) {
+                  return receiverId || senderId || '';
+                }
+
+                if (senderId === currentUserId) {
+                  return receiverId;
+                }
+
+                if (receiverId === currentUserId) {
+                  return senderId;
+                }
+
+                return receiverId || senderId || '';
+              })
+              .filter((userId): userId is string => Boolean(userId))
+          )
         );
-        this.loadingSignal.set(false);
+
+        if (friendIds.length === 0) {
+          this.friendsSignal.set([]);
+          this.loadingSignal.set(false);
+          return;
+        }
+
+        forkJoin(friendIds.map((friendId) => this.userService.getUserProfile(friendId))).subscribe({
+          next: (profiles) => {
+            this.friendsSignal.set(
+              profiles.map((profile) => ({
+                userId: profile.userId,
+                username: profile.username,
+                email: profile.email,
+                avatarUrl: profile.avatarUrl,
+                isActive: profile.isActive,
+                subtitle: profile.status === 'online' ? 'En línea' : 'Disponible',
+                status: profile.status,
+                createdAt: profile.createdAt,
+                updatedAt: profile.updatedAt,
+              }))
+            );
+            this.loadingSignal.set(false);
+          },
+          error: (error) => {
+            console.error('Error loading friend profiles:', error);
+            this.errorSignal.set('No se pudieron cargar los perfiles de amigos');
+            this.loadingSignal.set(false);
+            this.friendsSignal.set([]);
+          },
+        });
       },
       error: (error) => {
         console.error('Error loading friends:', error);

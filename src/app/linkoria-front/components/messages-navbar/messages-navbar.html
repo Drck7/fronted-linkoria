@@ -6,24 +6,12 @@
 
   <div class="flex-1 overflow-y-auto p-2">
     <ul class="menu gap-1 p-0">
-      <li>
-        <a
-          routerLink="/chat"
-          [routerLinkActiveOptions]="{ exact: true }"
-          routerLinkActive="bg-base-100 text-base-content shadow-sm"
-          class="rounded-2xl px-3 py-3"
-        >
-          <span class="flex flex-col items-start">
-            <span class="text-sm font-medium">Vista general</span>
-            <span class="text-xs text-base-content/60">Abrir el chat principal</span>
-          </span>
-        </a>
-      </li>
+      <!-- 'Vista general' removed per user request -->
 
       @for (conversation of conversations(); track conversation.id) {
         <li>
           <a
-            [routerLink]="['/chat', conversation.id]"
+            [routerLink]="conversation.participant?.username ? ['/chat', conversation.participant?.username] : ['/chat', conversation.id]"
             [routerLinkActiveOptions]="{ exact: true }"
             routerLinkActive="bg-base-100 text-base-content shadow-sm"
             class="rounded-2xl px-3 py-3"

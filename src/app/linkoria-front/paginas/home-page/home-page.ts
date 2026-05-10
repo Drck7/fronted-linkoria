@@ -31,14 +31,20 @@ export class HomePage {
    * Al clickear en un amigo, abre el chat con él
    */
   abrirChat(userId: string): void {
-    this.chatService.openConversationWithUser(userId);
-    // Navegar al chat
-    setTimeout(() => {
-      const conversation = this.chatService.currentConversation();
-      if (conversation) {
-        this.router.navigate(['/chat', conversation.id]);
-      }
-    }, 100);
+    this.chatService.openConversationWithUser(userId).subscribe({
+      next: (conversation) => {
+        const username = conversation.participant?.username;
+        const target = username ?? (conversation.id ? String(conversation.id) : null);
+        if (target) {
+          this.router.navigate(['/chat', target]);
+        } else {
+          this.router.navigate(['/chat']);
+        }
+      },
+      error: (error) => {
+        console.error('Error opening conversation from home:', error);
+      },
+    });
   }
 
   /**

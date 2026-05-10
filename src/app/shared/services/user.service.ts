@@ -41,6 +41,20 @@ interface RawUserResponse {
   updatedAt?: string;
 }
 
+function normalizeUser(rawUser: RawUserResponse, fallbackId: string): UserProfile {
+  return {
+    userId: String(rawUser.userId ?? rawUser.id ?? rawUser.user_id ?? fallbackId),
+    username: rawUser.username ?? 'Usuario',
+    email: rawUser.email ?? '',
+    avatarUrl: rawUser.avatarUrl,
+    isActive: rawUser.isActive ?? false,
+    status: rawUser.status as 'online' | 'idle' | 'offline' | undefined,
+    bio: rawUser.bio,
+    createdAt: rawUser.createdAt ?? '',
+    updatedAt: rawUser.updatedAt ?? '',
+  };
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private readonly http = inject(HttpClient);
@@ -49,7 +63,9 @@ export class UserService {
    * Obtiene el perfil de un usuario específico
    */
   getUserProfile(userId: string): Observable<UserProfile> {
-    return this.http.get<UserProfile>(`${API_BASE_URL}/users/${userId}`);
+    return this.http.get<RawUserResponse>(`${API_BASE_URL}/users/${userId}`).pipe(
+      map((user) => normalizeUser(user, userId))
+    );
   }
 
   /**
@@ -57,18 +73,7 @@ export class UserService {
    */
   searchUsers(username: string): Observable<SearchUserResult[]> {
     return this.http.get<RawUserResponse[]>(`${API_BASE_URL}/users/search?username=${username}`).pipe(
-      map((users) =>
-        users.map((user, index) => ({
-          userId: String(user.userId ?? user.id ?? user.user_id ?? `user-${index}`),
-          username: user.username ?? 'Usuario',
-          email: user.email ?? '',
-          avatarUrl: user.avatarUrl,
-          isActive: user.isActive ?? false,
-          status: user.status as 'online' | 'idle' | 'offline' | undefined,
-          createdAt: user.createdAt ?? '',
-          updatedAt: user.updatedAt ?? '',
-        }))
-      )
+      map((users) => users.map((user, index) => normalizeUser(user, `user-${index}`)))
     );
   }
 

@@ -7,7 +7,7 @@ export const chatRoutes: Routes = [
     component: DirectMessagesPage,
   },
   {
-    path: ':conversationId',
+    path: ':username',
     component: DirectMessagesPage,
   },
 ];

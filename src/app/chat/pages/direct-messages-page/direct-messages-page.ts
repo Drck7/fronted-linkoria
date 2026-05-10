@@ -18,17 +18,36 @@ export class DirectMessagesPage {
   private readonly chatService = inject(ChatService);
   private readonly route = inject(ActivatedRoute);
 
-  private readonly conversationId = toSignal(
-    this.route.paramMap.pipe(map((params) => {
-      const id = params.get('conversationId');
-      return id ? parseInt(id, 10) : null;
-    })),
+  private readonly selectedUsername = toSignal(
+    this.route.paramMap.pipe(map((params) => params.get('username'))),
     { initialValue: null },
   );
 
   readonly activeConversation = computed(() => {
-    const selectedConversation = this.chatService.conversationById(this.conversationId());
-    return selectedConversation ?? this.chatService.firstConversation();
+    const param = this.selectedUsername();
+    if (param) {
+      // Primero intentar por username
+      const byUsername = this.chatService.conversations().find(
+        (conv) => conv.participant?.username === param
+      );
+      if (byUsername) {
+        return byUsername;
+      }
+
+      // Si no hay username, intentar tratar el param como ID numérico
+      const id = Number(param);
+      if (!Number.isNaN(id)) {
+        const byId = this.chatService.conversations().find((conv) => conv.id === id);
+        if (byId) {
+          return byId;
+        }
+      }
+
+      // No se encontró; devolver null para mostrar estado vacío
+      return null;
+    }
+
+    return this.chatService.firstConversation();
   });
 
   readonly isLoading = this.chatService.isLoading;
