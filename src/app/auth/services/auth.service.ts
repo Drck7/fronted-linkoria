@@ -4,9 +4,11 @@ import { HttpClient } from '@angular/common/http';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 import { catchError, mapTo, Observable, of, tap } from 'rxjs'
 
-// Estados posibles de autenticación
+// Estados posibles de autenticación.
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated'
+// URL base del backend para auth y sesión.
 const baseUrl = 'http://localhost:8081/api/v1'
+// Clave usada para persistir el usuario autenticado en localStorage.
 const userStorageKey = 'authUser'
 
 type RefreshResponse = {
@@ -38,6 +40,26 @@ export class AuthService {
 
   user= computed(() => this._user());
   token= computed(() => this._token());
+
+  /**
+   * Actualiza los datos del usuario autenticado en memoria y en localStorage.
+   * Se usa cuando el perfil propio cambia para reflejarlo también en el navbar.
+   */
+  updateCurrentUser(patch: Partial<User>) {
+    const currentUser = this._user();
+
+    if (!currentUser) {
+      return;
+    }
+
+    const updatedUser = {
+      ...currentUser,
+      ...patch,
+    };
+
+    this._user.set(updatedUser);
+    localStorage.setItem(userStorageKey, JSON.stringify(updatedUser));
+  }
 
   // Lee el usuario guardado en localStorage para restaurar la sesión tras recargar la app.
   private getStoredUser(): User | null {

@@ -51,7 +51,7 @@
   <!-- Datos y boton de login del usuario -->
   <div class="navbar-end gap-4">
     @if(authService.authStatus() === 'authenticated') {
-      <button class="btn btn-ghost ">
+      <button class="btn btn-ghost"  routerLink="/profile" routerLinkActive="text-secondary"  >
         {{ authService.user()?.username }}
       </button>
       <button class="btn btn-sm btn-error" (click)="authService.clearSession()">

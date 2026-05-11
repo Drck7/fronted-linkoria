@@ -1,0 +1,86 @@
+<div class="p-4 md:p-6">
+  @if (loading()) {
+    <div class="flex items-center justify-center rounded-2xl border border-base-300 bg-base-100 p-10">
+      <span class="loading loading-spinner loading-lg"></span>
+      <span class="ml-4 text-base-content/70">Cargando tu perfil...</span>
+    </div>
+  } @else if (error()) {
+    <div class="alert alert-error">
+      <span>{{ error() }}</span>
+    </div>
+  } @else if (profile(); as user) {
+    <div class="mx-auto max-w-3xl overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-lg">
+      <div class="bg-linear-to-r from-primary/15 via-secondary/10 to-accent/15 p-6 md:p-8">
+        <div class="flex flex-col gap-6 md:flex-row md:items-center">
+          <div class="avatar">
+            <div class="w-24 rounded-full ring ring-base-100 ring-offset-2 ring-offset-base-100">
+              <img
+                [src]="editar() ? (profileForm.value.avatarUrl || 'https://img.daisyui.com/images/profile/demo/gordon@192.webp') : (user.avatarUrl || 'https://img.daisyui.com/images/profile/demo/gordon@192.webp')"
+                [alt]="user.username" />
+            </div>
+          </div>
+
+          <div class="space-y-2">
+            <p class="text-sm font-semibold uppercase tracking-[0.2em] text-base-content/50">Perfil propio</p>
+            @if (editar()) {
+              <form class="grid gap-3" [formGroup]="profileForm">
+                <label class="form-control w-full max-w-md">
+                  <div class="label">
+                    <span class="label-text">Nombre de usuario</span>
+                  </div>
+                  <input class="input input-bordered w-full" formControlName="username" type="text" />
+                </label>
+
+                <label class="form-control w-full max-w-md">
+                  <div class="label">
+                    <span class="label-text">Avatar URL</span>
+                  </div>
+                  <input class="input input-bordered w-full" formControlName="avatarUrl" type="url" />
+                </label>
+              </form>
+            } @else {
+              <h1 class="text-3xl font-bold">{{ user.username }}</h1>
+              <p class="text-base-content/70">{{ user.email }}</p>
+              <div class="flex flex-wrap gap-2 pt-1">
+                <span class="badge badge-primary">{{ user.isActive ? 'Cuenta activa' : 'Cuenta inactiva' }}</span>
+                @if (user.status) {
+                  <span class="badge badge-outline">{{ user.status }}</span>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      </div>
+
+      <div class="grid gap-4 p-6 md:grid-cols-2">
+        @if (editar()) {
+          <div class="md:col-span-2 flex flex-wrap gap-3">
+            <button class="btn btn-primary" type="button" (click)="guardarPerfil()">Guardar cambios</button>
+            <button class="btn btn-ghost" type="button" (click)="cancelarEditar()">Cancelar</button>
+          </div>
+        } @else {
+          <div class="md:col-span-2 flex justify-end">
+            <button class="btn btn-primary" type="button" (click)="editarPerfil()">Editar perfil</button>
+          </div>
+        }
+
+        <div class="rounded-2xl bg-base-200/60 p-4">
+          <p class="text-sm text-base-content/50">ID de usuario</p>
+          <p class="mt-1 break-all font-medium">{{ user.userId }}</p>
+        </div>
+
+        <div class="rounded-2xl bg-base-200/60 p-4">
+          <p class="text-sm text-base-content/50">Última actualización</p>
+          <p class="mt-1 font-medium">{{ user.updatedAt | date:'medium' }}</p>
+        </div>
+
+        <div class="rounded-2xl bg-base-200/60 p-4 md:col-span-2">
+          <p class="text-sm text-base-content/50">Bio</p>
+          <p class="mt-1 whitespace-pre-line leading-relaxed text-base-content/80">
+            {{ user.bio || 'Todavía no has escrito una bio.' }}
+          </p>
+        </div>
+      </div>
+    </div>
+  }
+</div>

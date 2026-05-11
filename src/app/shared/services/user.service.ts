@@ -2,6 +2,7 @@ import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 
+// Base URL del backend para todas las llamadas relacionadas con usuarios.
 const API_BASE_URL = 'http://localhost:8081/api/v1';
 
 export interface UserProfile {
@@ -41,6 +42,12 @@ interface RawUserResponse {
   updatedAt?: string;
 }
 
+export interface UpdateUserProfileRequest {
+  username?: string;
+  email?: string;
+  avatarUrl?: string;
+}
+
 function normalizeUser(rawUser: RawUserResponse, fallbackId: string): UserProfile {
   return {
     userId: String(rawUser.userId ?? rawUser.id ?? rawUser.user_id ?? fallbackId),
@@ -64,6 +71,15 @@ export class UserService {
    */
   getUserProfile(userId: string): Observable<UserProfile> {
     return this.http.get<RawUserResponse>(`${API_BASE_URL}/users/${userId}`).pipe(
+      map((user) => normalizeUser(user, userId))
+    );
+  }
+
+  /**
+   * Actualiza los campos editables del perfil de usuario.
+   */
+  updateUserProfile(userId: string, payload: UpdateUserProfileRequest): Observable<UserProfile> {
+    return this.http.patch<RawUserResponse>(`${API_BASE_URL}/users/${userId}`, payload).pipe(
       map((user) => normalizeUser(user, userId))
     );
   }

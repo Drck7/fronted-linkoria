@@ -5,6 +5,8 @@ import { NotifyPage } from "./paginas/notify-pages/notify-pages";
 import { NotFoundPage } from "./paginas/not-found-page/not-found-page";
 import { HomePage } from "./paginas/home-page/home-page";
 import { SearchUsersPage } from "./paginas/search-users-page/search-users-page";
+import { ProfilePage } from "./paginas/profile-page/profile-page";
+import { UserProfilePage } from "./paginas/user-profile-page/user-profile-page/user-profile-page";
 
 export const linkoriaFrontRoutes = [
   {
@@ -26,6 +28,14 @@ export const linkoriaFrontRoutes = [
         {
           path: 'users/search',
           component: SearchUsersPage
+        },
+        {
+          path: 'profile',
+          component: ProfilePage
+        },
+        {
+          path: 'users/:id',
+          component: UserProfilePage
         },
         {
           path: 'chat',
