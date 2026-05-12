@@ -30,6 +30,10 @@ export const linkoriaFrontRoutes = [
           component: SearchUsersPage
         },
         {
+          path: 'users/notify',
+          component: NotifyPage
+        },
+        {
           path: 'profile',
           component: ProfilePage
         },
@@ -41,10 +45,7 @@ export const linkoriaFrontRoutes = [
           path: 'chat',
           loadChildren: () => import('../chat/chat.routes')
         },
-        {
-          path: 'users/notify',
-          component: NotifyPage
-        },
+
         {
           path:'**',
           component:NotFoundPage

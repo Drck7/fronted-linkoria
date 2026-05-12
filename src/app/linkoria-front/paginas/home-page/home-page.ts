@@ -53,4 +53,27 @@ export class HomePage {
   irAAnadirAmigos(): void {
     this.router.navigate(['/users/search']);
   }
+
+  /**
+   * Navega al perfil del usuario especificado
+   */
+  verPerfil(userId: string): void {
+    this.router.navigate(['/users', userId]);
+  }
+
+  /**
+   * Elimina a un amigo (requiere confirmación)
+   */
+  eliminarAmigo(userId: string): void {
+    if (confirm('¿Estás seguro de que deseas eliminar este amigo?')) {
+      this.friendshipService.removeFriend(userId).subscribe({
+        next: () => {
+          console.log('Amigo eliminado');
+        },
+        error: (error) => {
+          console.error('Error al eliminar amigo:', error);
+        },
+      });
+    }
+  }
 }

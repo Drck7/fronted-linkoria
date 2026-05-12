@@ -59,8 +59,19 @@
             }
           </div>
 
-          <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button class="btn btn-circle btn-sm btn-ghost bg-base-300" (click)="$event.stopPropagation()">⋮</button>
+          <!-- Dropdown menu para opciones -->
+          <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" (click)="$event.stopPropagation()">
+            <div class="dropdown dropdown-end">
+              <button class="btn btn-circle btn-sm btn-ghost" (click)="$event.stopPropagation()">⋮</button>
+              <ul class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow">
+                <li>
+                  <a (click)="verPerfil(amigo.userId); $event.stopPropagation()">👤 Ver perfil</a>
+                </li>
+                <li>
+                  <a (click)="eliminarAmigo(amigo.userId); $event.stopPropagation()">❌ Eliminar amigo</a>
+                </li>
+              </ul>
+            </div>
           </div>
         </div>
       }
