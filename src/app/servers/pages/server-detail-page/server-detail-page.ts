@@ -5,4 +5,6 @@ import { Component } from '@angular/core';
   imports: [],
   templateUrl: './server-detail-page.html'
 })
-export class ServerDetailPage {}
+export class ServerDetailPage {
+  
+}

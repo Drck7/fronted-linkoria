@@ -1,1 +1,15 @@
-<p>server-list works!</p>,
+<!-- Lista simple de servidores. Presentacional: no llama al servicio. -->
+<div class="server-list">
+	<div class="controls">
+		<button type="button" (click)="onCreate()">Crear servidor</button>
+	</div>
+	<ul>
+		<li *ngFor="let s of servers" class="server-item" (click)="onSelect(s.id)">
+			<div class="server-card">
+				<img *ngIf="s.iconUrl" [src]="s.iconUrl" alt="icono" width="28" height="28">
+				<span class="server-name">{{ s.name }}</span>
+			</div>
+			<button type="button" class="delete-btn" (click)="onDelete(s.id, $event)">Eliminar</button>
+		</li>
+	</ul>
+</div>

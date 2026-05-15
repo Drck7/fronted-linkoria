@@ -1,1 +1,16 @@
-<p>members-list works!</p>,
+<!-- Lista de miembros del servidor con acciones básicas (presentacional). -->
+<div class="members-list">
+	<ul>
+		<li *ngFor="let m of members">
+			<div class="member-info">
+				<img *ngIf="m.avatarUrl" [src]="m.avatarUrl" alt="avatar" width="28" height="28">
+				<span>{{ m.username }}</span>
+				<small class="role">{{ m.role }}</small>
+			</div>
+			<div class="actions">
+				<button (click)="doChangeRole(m.userId, m.role === 'member' ? 'admin' : 'member')">Alternar rol</button>
+				<button (click)="doKick(m.userId)">Expulsar</button>
+			</div>
+		</li>
+	</ul>
+</div>

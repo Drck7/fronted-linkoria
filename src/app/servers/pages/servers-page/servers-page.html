@@ -1,94 +1,66 @@
 <div class="servers-page layout">
-	<!-- Izquierda: Navbar de servidores (iconos pequeños verticales) -->
-	<aside class="servers-sidebar">
-		<div class="servers-list">
-			<!-- Estado de carga -->
-			<div *ngIf="svc.loadingServers()" class="loading">Cargando servidores...</div>
-			<div *ngIf="svc.errorServers()" class="error">Error: {{ svc.errorServers() }}</div>
+  <!-- IZQUIERDA: servidores viven en la navbar del layout -->
+  <aside class="servers-sidebar-note">
+    <p>Selecciona un servidor desde la barra lateral.</p>
+  </aside>
 
-			<!-- Listar servidores del usuario -->
-			<ul>
-				<li *ngFor="let server of svc.servers()" class="server-item">
-					<!-- Navegar al detalle del servidor al hacer clic -->
-					<a [routerLink]="['/servers', server.id]" class="server-link">
-						<!-- Icono del servidor -->
-						<img *ngIf="server.iconUrl" [src]="server.iconUrl" alt="{{server.name}}" class="server-icon">
-						<span class="server-name">{{ server.name }}</span>
-					</a>
-				</li>
-			</ul>
+  <!-- CENTRO: canales + chat -->
+  <main class="channels-and-chat">
+    <nav class="channels-sidebar">
+      <h4>Canales</h4>
 
-			<button class="create-server">Crear servidor</button>
-		</div>
-	</aside>
+      <div *ngIf="serversService.loadingChannels()" class="loading">Cargando canales...</div>
+      <div *ngIf="serversService.errorChannels()" class="error">Error canales: {{ serversService.errorChannels() }}</div>
 
-	<!-- Centro: Canales + Chat -->
-	<main class="channels-and-chat">
-		<!-- Navbar de canales (izquierda del chat) -->
-		<nav class="channels-sidebar">
-			<!-- Estado de carga de canales -->
-			<div *ngIf="svc.loadingChannels()" class="loading">Cargando canales...</div>
-			<div *ngIf="svc.errorChannels()" class="error">Error canales: {{ svc.errorChannels() }}</div>
+      <app-channel-list
+        [channels]="serversService.channels()"
+        (selectChannel)="seleccionarCanal($event)"
+        (createChannel)="crearCanalDesdeLista($event)"
+        (deleteChannel)="eliminarCanalDesdeLista($event)"
+      ></app-channel-list>
+    </nav>
 
-			<h4>Canales</h4>
-			<!-- Listar canales del servidor seleccionado -->
-			<ul>
-				<li *ngFor="let ch of svc.channels()" class="channel-item">
-					<a class="channel-link"># {{ ch.name }}</a>
-				</li>
-			</ul>
-		</nav>
+    <section class="chat-view">
+      <header class="chat-header">
+        <h3>{{ serversService.selectedServer()?.name || 'Selecciona un servidor' }}</h3>
+        <p *ngIf="serversService.selectedChannel()">Canal activo: #{{ serversService.selectedChannel()?.name }}</p>
+      </header>
 
-		<!-- Vista del chat -->
-		<section class="chat-view">
-			<header class="chat-header">
-				<h3>{{ svc.selectedServer()?.name || 'Selecciona un servidor' }}</h3>
-			</header>
+      <div class="chat-messages">
+        <p *ngIf="!serversService.selectedServer()">No hay servidor seleccionado.</p>
+        <p *ngIf="serversService.selectedServer() && !serversService.selectedChannel()">Selecciona un canal para ver el chat.</p>
+        <div *ngIf="serversService.selectedChannel()">Aquí irá la vista de mensajes del canal seleccionado.</div>
+      </div>
 
-			<div class="chat-messages">
-				<!-- Placeholder: reemplazar con componente de hilo de chat real -->
-				<p *ngIf="!svc.selectedServer()">No hay servidor seleccionado.</p>
-				<div *ngIf="svc.selectedServer()">Aquí irá la vista de mensajes del canal seleccionado.</div>
-			</div>
+      <footer class="chat-composer">
+        <input type="text" placeholder="Escribe un mensaje...">
+        <button>Enviar</button>
+      </footer>
+    </section>
+  </main>
 
-			<footer class="chat-composer">
-				<input type="text" placeholder="Escribe un mensaje...">
-				<button>Enviar</button>
-			</footer>
-		</section>
-	</main>
+  <!-- DERECHA: miembros -->
+  <aside class="members-sidebar">
+    <h4>Miembros</h4>
 
-	<!-- Derecha: Lista de miembros -->
-	<aside class="members-sidebar">
-		<h4>Miembros</h4>
-		<!-- Estado de carga de miembros -->
-		<div *ngIf="svc.loadingMembers()" class="loading">Cargando miembros...</div>
-		<div *ngIf="svc.errorMembers()" class="error">Error miembros: {{ svc.errorMembers() }}</div>
+    <div *ngIf="serversService.loadingMembers()" class="loading">Cargando miembros...</div>
+    <div *ngIf="serversService.errorMembers()" class="error">Error miembros: {{ serversService.errorMembers() }}</div>
 
-		<ul>
-			<li *ngFor="let m of svc.serverMembers()" class="member-item">
-				<!-- Avatar del miembro -->
-				<img *ngIf="m.avatarUrl" [src]="m.avatarUrl" alt="{{m.username}}" class="member-avatar">
-				<div class="member-info">
-					<div class="member-name">{{ m.username }}</div>
-					<!-- Rol del miembro -->
-					<div class="member-role">{{ m.role }}</div>
-				</div>
-			</li>
-		</ul>
-	</aside>
+    <members-list
+      [members]="serversService.serverMembers()"
+      (kickMember)="eliminarMiembro(serversService.selectedServer()?.id, $event)"
+      (changeRole)="cambiarRolMiembro(serversService.selectedServer()?.id, $event.userId, $event.newRole)"
+    ></members-list>
+  </aside>
 </div>
 
-<!-- Estilos simples (mover a archivo CSS cuando sea necesario) -->
 <style>
-.servers-page { display: flex; height: 100vh; }
-.servers-sidebar { width: 72px; background:#1e1e1e; color:#fff; padding:8px; }
-.channels-and-chat { flex:1; display:flex; }
-.channels-sidebar { width:240px; background:#2a2a2a; color:#fff; padding:12px; }
+.servers-page { display: flex; height: calc(100vh - 64px); }
+.servers-sidebar-note { width: 0; overflow: hidden; }
+.channels-and-chat { flex: 1; display: flex; }
+.channels-sidebar { width: 260px; background:#2a2a2a; color:#fff; padding:12px; overflow-y:auto; }
 .chat-view { flex:1; display:flex; flex-direction:column; background:#151515; color:#e6e6e6; }
-.members-sidebar { width:280px; background:#1f1f1f; color:#fff; padding:12px; }
-.server-item, .channel-item, .member-item { list-style:none; margin:6px 0; }
-.server-icon, .member-avatar { width:36px; height:36px; border-radius:6px; }
+.members-sidebar { width:300px; background:#1f1f1f; color:#fff; padding:12px; overflow-y:auto; }
 .chat-messages { flex:1; padding:16px; overflow:auto; }
 .chat-composer { display:flex; padding:8px; border-top:1px solid rgba(255,255,255,0.04); }
 .chat-composer input { flex:1; padding:8px; margin-right:8px; }

@@ -1,1 +1,13 @@
-<p>channel-list works!</p>,
+<!-- Lista de canales: selecciona, crea y elimina. Presentacional. -->
+<div class="channel-list">
+	<div class="create">
+		<input #name placeholder="Nombre canal">
+		<button (click)="onCreate(name)">Crear</button>
+	</div>
+	<ul>
+		<li *ngFor="let c of channels" class="channel-item" (click)="onSelect(c.id)">
+			<span># {{ c.name }}</span>
+			<button (click)="onDelete(c.id, $event)">Eliminar</button>
+		</li>
+	</ul>
+</div>
