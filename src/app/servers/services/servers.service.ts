@@ -13,6 +13,7 @@ const baseUrl = 'http://localhost:8081/api/v1';
 export class ServersService {
   private http = inject(HttpClient);
 
+  // Signals internas: el servicio las muta y los componentes solo las leen.
   private _servers = signal<Server[]>([]);
   private _selectedServer = signal<Server | null>(null);
   private _members = signal<ServerMember[]>([]);
@@ -20,6 +21,7 @@ export class ServersService {
   private _selectedChannel = signal<Channel | null>(null);
   private _categories = signal<ChannelCategory[]>([]);
 
+  // Signals públicas derivadas para consumir en componentes y templates.
   servers = computed(() => this._servers());
   selectedServer = computed(() => this._selectedServer());
   serverMembers = computed(() => this._members());
@@ -27,16 +29,19 @@ export class ServersService {
   selectedChannel = computed(() => this._selectedChannel());
   channelCategories = computed(() => this._categories());
 
+  // Estados de carga por bloque funcional.
   loadingServers = signal(false);
   loadingMembers = signal(false);
   loadingChannels = signal(false);
   loadingCategories = signal(false);
 
+  // Estados de error por bloque funcional.
   errorServers = signal<string | null>(null);
   errorMembers = signal<string | null>(null);
   errorChannels = signal<string | null>(null);
   errorCategories = signal<string | null>(null);
 
+  // Servidores.
   obtenerServidores(): Observable<Server[]> {
     this.loadingServers.set(true);
     this.errorServers.set(null);
@@ -154,6 +159,7 @@ export class ServersService {
     );
   }
 
+  // Miembros del servidor.
   obtenerMiembros(serverId: number): Observable<ServerMember[]> {
     this.loadingMembers.set(true);
     this.errorMembers.set(null);
@@ -201,6 +207,7 @@ export class ServersService {
     );
   }
 
+  // Canales del servidor.
   obtenerCanales(serverId: number, categoryId?: number): Observable<Channel[]> {
     this.loadingChannels.set(true);
     this.errorChannels.set(null);
@@ -273,6 +280,7 @@ export class ServersService {
     );
   }
 
+  // Categorías de canal.
   obtenerCategorias(serverId: number): Observable<ChannelCategory[]> {
     this.loadingCategories.set(true);
     this.errorCategories.set(null);
