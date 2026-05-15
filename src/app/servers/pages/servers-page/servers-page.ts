@@ -1,16 +1,21 @@
-import { Component, Inject } from '@angular/core';
-import { Server } from '../../interfaces/server.interface';
+import { Component, OnInit, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
 import { ServersService } from '../../services/servers.service';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'servers-page',
-  imports: [],
+  imports: [CommonModule, RouterLink],
   templateUrl: './servers-page.html'
 })
-export class ServersPage {
-  ServersService= Inject(ServersService)
+export class ServersPage implements OnInit {
+  private serversService = inject(ServersService);
 
-  get servers(): Server[] {
-    return this.ServersService.servers;
+  // Exponer servicio al template para acceder a signals y métodos
+  readonly svc = this.serversService;
+
+  ngOnInit(): void {
+    // Cargar lista de servidores al iniciar la página
+    this.svc.obtenerServidores();
   }
 }

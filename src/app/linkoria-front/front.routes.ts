@@ -8,6 +8,7 @@ import { SearchUsersPage } from "./paginas/search-users-page/search-users-page";
 import { ProfilePage } from "./paginas/profile-page/profile-page";
 import { UserProfilePage } from "./paginas/user-profile-page/user-profile-page/user-profile-page";
 
+
 export const linkoriaFrontRoutes = [
   {
     path: '',
@@ -41,6 +42,11 @@ export const linkoriaFrontRoutes = [
           path: 'users/:id',
           component: UserProfilePage
         },
+        {
+          path: 'servers',
+          loadChildren: () => import('../servers/servers.route')
+        }
+        ,
         {
           path: 'chat',
           loadChildren: () => import('../chat/chat.routes')
