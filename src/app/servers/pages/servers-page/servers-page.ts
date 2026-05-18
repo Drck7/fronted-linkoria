@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { ServersService } from '../../services/servers.service';
 import { ChannelList } from '../../components/channel-list/channel-list';
 import { MembersList } from '../../components/members-list/members-list';
@@ -10,8 +11,26 @@ import { MembersList } from '../../components/members-list/members-list';
   imports: [CommonModule, ChannelList, MembersList],
   templateUrl: './servers-page.html'
 })
-export class ServersPage  {
+export class ServersPage implements OnInit {
   readonly serversService = inject(ServersService);
+  private readonly route = inject(ActivatedRoute);
+
+  ngOnInit(): void {
+    this.cargarServidores();
+
+    this.route.paramMap.subscribe(params => {
+      const rawServerId = params.get('serverId');
+      if (!rawServerId) return;
+
+      const serverId = Number(rawServerId);
+      if (Number.isNaN(serverId)) {
+        console.warn('ID de servidor invalido en la ruta:', rawServerId);
+        return;
+      }
+
+      this.seleccionarServidor(serverId);
+    });
+  }
 
   cargarServidores() {
     this.serversService.obtenerServidores().subscribe({
