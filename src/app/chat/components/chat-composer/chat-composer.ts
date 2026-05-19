@@ -1,9 +1,9 @@
 import { ChangeDetectionStrategy, Component, output } from '@angular/core';
-import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angular/forms';
 
 @Component({
   selector: 'chat-composer',
-  imports: [ReactiveFormsModule],
+  imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './chat-composer.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

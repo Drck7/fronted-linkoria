@@ -11,7 +11,7 @@
       @for (conversation of conversations(); track conversation.id) {
         <li>
           <a
-            [routerLink]="conversation.participant?.username ? ['/chat', conversation.participant?.username] : ['/chat', conversation.id]"
+            [routerLink]="rutaConversacion(conversation)"
             [routerLinkActiveOptions]="{ exact: true }"
             routerLinkActive="bg-base-100 text-base-content shadow-sm"
             class="rounded-2xl px-3 py-3"
@@ -27,7 +27,11 @@
 
               <div class="min-w-0 flex-1 text-left">
                 <div class="flex items-center justify-between gap-2">
-                  <span class="truncate text-sm font-medium">{{ conversation.participant?.username ?? 'Conversación' }}</span>
+                  @if (nombreConversacion(conversation)) {
+                    <span class="truncate text-sm font-medium">
+                      {{ nombreConversacion(conversation) }}
+                    </span>
+                  }
                   @if ((conversation.unreadCount ?? 0) > 0) {
                     <span class="badge badge-secondary badge-sm">{{ conversation.unreadCount }}</span>
                   }

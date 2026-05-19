@@ -11,70 +11,6 @@ const timeFormatter = new Intl.DateTimeFormat('es-ES', {
   minute: '2-digit',
 });
 
-// Datos de ejemplo para desarrollo (fallback)
-const mockConversations: ChatConversation[] = [
-  {
-    id: 1,
-    type: 'DM',
-    createdAt: '2026-05-10T18:00:00.000Z',
-    participant: {
-      userId: 'u-100',
-      username: 'Mia',
-      email: 'mia@example.com',
-      isActive: true,
-      createdAt: '2026-01-01T00:00:00.000Z',
-      updatedAt: '2026-05-10T18:00:00.000Z',
-      status: 'online',
-      subtitle: 'Disponible para hablar',
-    },
-    unreadCount: 2,
-    lastMessagePreview: 'Te paso la idea del canal por privado.',
-    lastMessageLabel: '18:42',
-    lastMessageAt: '2026-05-10T18:42:00.000Z',
-    messages: [
-      {
-        messageId: 1,
-        conversationId: 1,
-        userId: 'u-100',
-        content: 'Ey, ya tengo una propuesta para la sala de bienvenida.',
-        messageType: 'TEXT',
-        replyToMessageId: null,
-        isEdited: false,
-        isReply: false,
-        createdAt: '2026-05-10T18:10:00.000Z',
-        updatedAt: '2026-05-10T18:10:00.000Z',
-        isMine: false,
-      },
-      {
-        messageId: 2,
-        conversationId: 1,
-        userId: 'me',
-        content: 'Pásamela y la montamos con la misma estructura que ya tenemos.',
-        messageType: 'TEXT',
-        replyToMessageId: null,
-        isEdited: false,
-        isReply: false,
-        createdAt: '2026-05-10T18:26:00.000Z',
-        updatedAt: '2026-05-10T18:26:00.000Z',
-        isMine: true,
-      },
-      {
-        messageId: 3,
-        conversationId: 1,
-        userId: 'u-100',
-        content: 'Te paso la idea del canal por privado.',
-        messageType: 'TEXT',
-        replyToMessageId: null,
-        isEdited: false,
-        isReply: false,
-        createdAt: '2026-05-10T18:42:00.000Z',
-        updatedAt: '2026-05-10T18:42:00.000Z',
-        isMine: false,
-      },
-    ],
-  },
-];
-
 @Injectable({ providedIn: 'root' })
 export class ChatService {
   private readonly authService = inject(AuthService);
@@ -99,18 +35,17 @@ export class ChatService {
   readonly error = this.errorSignal.asReadonly();
 
   constructor() {
-    // Conectar WebSocket al inicializar el servicio
-    this.wsService.connect();
-
-    // Escuchar mensajes nuevos en tiempo real
-    this.wsService.onMessageCreated().subscribe((notification) => {
+    // Escuchar mensajes nuevos en tiempo real (solo si están disponibles)
+    this.wsService.onMensajeCreado().subscribe((notification) => {
       this.handleNewMessage(notification.payload);
     });
 
-    // Cargar conversaciones al iniciar (cuando el usuario se autentica)
+    // Cargar conversaciones y conectar WebSocket cuando se autentica el usuario
     effect(() => {
       if (this.authService.authStatus() === 'authenticated') {
         this.loadConversations();
+        // Conectar WebSocket cuando estemos autenticados
+        this.wsService.conectar();
       }
     });
   }
@@ -124,17 +59,17 @@ export class ChatService {
 
     this.httpService.getConversations().subscribe({
       next: (conversations) => {
+        console.log('✓ Conversaciones cargadas:', conversations.length);
         this.conversationsSignal.set(
           conversations.map((conv) => this.formatConversation(conv))
         );
         this.loadingSignal.set(false);
       },
       error: (error) => {
-        console.error('Error loading conversations:', error);
+        console.error('✗ Error loading conversations:', error);
         this.errorSignal.set('No se pudieron cargar las conversaciones');
         this.loadingSignal.set(false);
-        // Fallback a datos mockeados
-        this.conversationsSignal.set(mockConversations);
+        this.conversationsSignal.set([]);
       },
     });
   }
@@ -201,7 +136,7 @@ export class ChatService {
           this.currentConversationSignal.set(updated);
 
           // Subscribirse a nuevos mensajes de esta conversación
-          this.wsService.subscribeToConversation(conversationId);
+          this.wsService.suscribirseAConversacion(conversationId);
         }
         this.loadingSignal.set(false);
       },
@@ -223,7 +158,7 @@ export class ChatService {
       return;
     }
 
-      this.wsService.sendMessage(conversationId, text, 'TEXT', null);
+        this.wsService.enviarMensaje(conversationId, text, 'TEXT', null);
   }
 
   /**
@@ -239,13 +174,17 @@ export class ChatService {
     const currentUser = this.authService.user();
     const formattedMessage = this.formatMessage(message);
 
-    // Actualizar conversación actual si está abierta
     if (this.currentConversationSignal()?.id === message.conversationId) {
-      const current = this.currentConversationSignal()!;
-      this.currentConversationSignal.set({
-        ...current,
-        messages: [...(current.messages || []), formattedMessage],
-      });
+      const current = this.currentConversationSignal();
+      const currentMessages = current?.messages ?? [];
+      const alreadyExists = currentMessages.some((existing) => existing.messageId === formattedMessage.messageId);
+
+      if (current && !alreadyExists) {
+        this.currentConversationSignal.set({
+          ...current,
+          messages: [...currentMessages, formattedMessage],
+        });
+      }
     }
 
     // Actualizar lista de conversaciones
