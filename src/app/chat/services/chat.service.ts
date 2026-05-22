@@ -1,15 +1,23 @@
 import { computed, effect, inject, Injectable, signal } from '@angular/core';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { AuthService } from '../../auth/services/auth.service';
 import { ChatConversation, ChatMessage } from '../interfaces/chat-conversation.interface';
 import { ChatHttpService } from './chat-http.service';
 import { ChatWebSocketService } from './chat-websocket.service';
 
+
+type BackendConversation = ChatConversation & {
+  targetId?: string;
+  targetUsername?: string;
+  targetIconUrl?: string | null;
+};
+
 const timeFormatter = new Intl.DateTimeFormat('es-ES', {
   hour: '2-digit',
   minute: '2-digit',
 });
+
 
 @Injectable({ providedIn: 'root' })
 export class ChatService {
@@ -30,6 +38,13 @@ export class ChatService {
     });
   });
 
+  /**
+   * Devuelve la ruta de navegación para una conversación directa.
+   */
+  getConversationRoute(conversation: ChatConversation): string[] {
+    const username = conversation.participant?.username?.trim();
+    return username ? ['/chat', username] : [];
+  }  
   readonly currentConversation = this.currentConversationSignal.asReadonly();
   readonly isLoading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();
@@ -83,27 +98,37 @@ export class ChatService {
     }
 
     const id = typeof conversationId === 'string' ? parseInt(conversationId, 10) : conversationId;
-    return this.conversations().find((conversation) => conversation.id === id) ?? null;
+    return (
+      this.conversations().find((conversation) => conversation.id === id) ??
+      (this.currentConversationSignal()?.id === id ? this.currentConversationSignal() : null)
+    );
   }
 
   /**
-   * Primera conversación ordenada por tiempo
+   * Limpia la conversación activa actual.
+   */
+  clearCurrentConversation(): void {
+    this.currentConversationSignal.set(null);
+  }
+
+  /**
+   * Devuelve la primera conversación ordenada por tiempo.
    */
   firstConversation(): ChatConversation | null {
     return this.conversations()[0] ?? null;
   }
 
   /**
-   * Abre o crea una conversación directa con un usuario específico
-   * Útil para cuando se clickea en un amigo y se quiere abrir el chat
+   * Abre o crea una conversación directa con un usuario específico.
+   * Se usa cuando se selecciona un amigo desde la interfaz.
    */
   openConversationWithUser(userId: string): Observable<ChatConversation> {
     this.loadingSignal.set(true);
     this.errorSignal.set(null);
 
     return this.httpService.createOrGetConversation(userId).pipe(
-      tap((conversation) => {
-        const formattedConv = this.formatConversation(conversation);
+      map((conversation) => this.formatConversation(conversation)),
+      tap((formattedConv) => {
 
         this.conversationsSignal.update((convs) => {
           const exists = convs.find((c) => c.id === formattedConv.id);
@@ -121,7 +146,23 @@ export class ChatService {
   }
 
   /**
-   * Carga los mensajes de una conversación
+    * Abre la conversación asociada a un canal de servidor.
+   */
+  openChannelConversation(channelId: number): Observable<ChatConversation> {
+    this.loadingSignal.set(true);
+    this.errorSignal.set(null);
+
+    return this.httpService.getChannelConversation(channelId).pipe(
+      map((conversation) => this.formatConversation(conversation)),
+      tap((formattedConversation) => {
+        this.currentConversationSignal.set(formattedConversation);
+        this.loadingSignal.set(false);
+      }),
+    );
+  }
+
+  /**
+    * Carga los mensajes de una conversación y suscribe el canal en tiempo real.
    */
   loadMessages(conversationId: number): void {
     this.loadingSignal.set(true);
@@ -129,9 +170,13 @@ export class ChatService {
       next: (response) => {
         const conversation = this.conversationById(conversationId);
         if (conversation) {
+          const mensajesOrdenados = this.ordenarMensajesCronologicos(
+            response.messages.map((msg) => this.formatMessage(msg)),
+          );
+
           const updated = {
             ...conversation,
-            messages: response.messages.map((msg) => this.formatMessage(msg)),
+            messages: mensajesOrdenados,
           };
           this.currentConversationSignal.set(updated);
 
@@ -149,7 +194,7 @@ export class ChatService {
   }
 
   /**
-   * Envía un mensaje (HTTP por ahora, WebSocket después)
+    * Envía un mensaje por STOMP a la conversación activa.
    */
     sendMessage(conversationId: number, content: string): void {
     const text = content.trim();
@@ -158,31 +203,31 @@ export class ChatService {
       return;
     }
 
-        this.wsService.enviarMensaje(conversationId, text, 'TEXT', null);
+      this.wsService.enviarMensaje(conversationId, text, 'TEXT', null);
   }
 
   /**
-   * Maneja nuevos mensajes que llegan por WebSocket
+       * Maneja los mensajes nuevos que llegan por WebSocket.
    */
   private handleNewMessage(message: ChatMessage): void {
-    const conversation = this.conversationById(message.conversationId);
-
-    if (!conversation) {
-      return;
-    }
-
     const currentUser = this.authService.user();
     const formattedMessage = this.formatMessage(message);
+    const currentConversation = this.currentConversationSignal();
 
-    if (this.currentConversationSignal()?.id === message.conversationId) {
-      const current = this.currentConversationSignal();
+    if (currentConversation?.id === message.conversationId) {
+      const current = currentConversation;
       const currentMessages = current?.messages ?? [];
       const alreadyExists = currentMessages.some((existing) => existing.messageId === formattedMessage.messageId);
 
       if (current && !alreadyExists) {
+        const mensajesOrdenados = this.ordenarMensajesCronologicos([
+          ...currentMessages,
+          formattedMessage,
+        ]);
+
         this.currentConversationSignal.set({
           ...current,
-          messages: [...currentMessages, formattedMessage],
+          messages: mensajesOrdenados,
         });
       }
     }
@@ -207,7 +252,7 @@ export class ChatService {
   }
 
   /**
-   * Formatea un mensaje del backend al formato frontend
+    * Convierte un mensaje del backend al formato que usa el frontend.
    */
   private formatMessage(msg: ChatMessage): ChatMessage {
     const currentUser = this.authService.user();
@@ -219,12 +264,39 @@ export class ChatService {
   }
 
   /**
-   * Formatea una conversación del backend al formato frontend
+    * Convierte una conversación del backend al formato que usa el frontend.
    */
   private formatConversation(conv: ChatConversation): ChatConversation {
+    const backendConversation = conv as BackendConversation;
+    const participant = conv.participant
+      ? conv.participant
+      : backendConversation.targetUsername
+        ? {
+            userId: backendConversation.targetId ?? '',
+            username: backendConversation.targetUsername,
+            email: '',
+            avatarUrl: backendConversation.targetIconUrl ?? undefined,
+            isActive: false,
+            createdAt: conv.createdAt,
+            updatedAt: conv.createdAt,
+          }
+        : undefined;
+
     return {
       ...conv,
-      messages: conv.messages?.map((msg) => this.formatMessage(msg)) || [],
+      participant,
+      messages: this.ordenarMensajesCronologicos(
+        conv.messages?.map((msg) => this.formatMessage(msg)) || [],
+      ),
     };
+  }
+
+  /**
+    * Ordena los mensajes del más antiguo al más reciente.
+   */
+  private ordenarMensajesCronologicos(messages: ChatMessage[]): ChatMessage[] {
+    return [...messages].sort((left, right) => {
+      return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
+    });
   }
 }

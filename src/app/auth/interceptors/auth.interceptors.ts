@@ -6,7 +6,7 @@ import { Observable } from "rxjs";
 
 export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
   const token = inject(AuthService).token();
-  
+
   // Solo agregar el header si hay token
   if (token) {
     const newReq = req.clone({
@@ -14,6 +14,6 @@ export function authInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn):
     });
     return next(newReq);
   }
-  
+
   return next(req);
 }

@@ -1,6 +1,9 @@
-import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { ChatComposerComponent } from '../../../chat/components/chat-composer/chat-composer';
+import { ChatThreadComponent } from '../../../chat/components/chat-thread/chat-thread';
+import { ChatService } from '../../../chat/services/chat.service';
 import { ServersService } from '../../services/servers.service';
 import { ChannelList } from '../../components/channel-list/channel-list';
 import { MembersList } from '../../components/members-list/members-list';
@@ -8,12 +11,45 @@ import { MembersList } from '../../components/members-list/members-list';
 @Component({
   selector: 'servers-page',
   standalone: true,
-  imports: [CommonModule, ChannelList, MembersList],
-  templateUrl: './servers-page.html'
+  imports: [CommonModule, ChannelList, MembersList, ChatThreadComponent, ChatComposerComponent],
+  templateUrl: './servers-page.html',
+  changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServersPage implements OnInit {
   readonly serversService = inject(ServersService);
+  readonly chatService = inject(ChatService);
   private readonly route = inject(ActivatedRoute);
+  private lastLoadedChannelId: number | null = null;
+
+  /**
+   * Sincroniza el chat visible con el canal seleccionado.
+   */
+  constructor() {
+    effect(() => {
+      const selectedChannel = this.serversService.selectedChannel();
+
+      if (!selectedChannel) {
+        this.lastLoadedChannelId = null;
+        this.chatService.clearCurrentConversation();
+        return;
+      }
+
+      if (this.lastLoadedChannelId === selectedChannel.id) {
+        return;
+      }
+
+      this.lastLoadedChannelId = selectedChannel.id;
+
+      this.chatService.openChannelConversation(selectedChannel.id).subscribe({
+        next: (conversation) => {
+          this.chatService.loadMessages(conversation.id);
+        },
+        error: (error) => {
+          console.error('Error al abrir la conversación del canal:', error);
+        },
+      });
+    });
+  }
 
   ngOnInit(): void {
     this.cargarServidores();
@@ -32,6 +68,9 @@ export class ServersPage implements OnInit {
     });
   }
 
+  /**
+   * Carga la lista de servidores del usuario autenticado.
+   */
   cargarServidores() {
     this.serversService.obtenerServidores().subscribe({
       next: () => {
@@ -43,6 +82,9 @@ export class ServersPage implements OnInit {
     });
   }
 
+  /**
+   * Carga el servidor seleccionado y sus miembros, canales y categorías.
+   */
   seleccionarServidor( serverId: number) {
     this.serversService.obtenerIdServidor(serverId).subscribe({
       next:() => {
@@ -63,6 +105,10 @@ export class ServersPage implements OnInit {
       }
     });
   }
+
+  /**
+   * Crea un servidor nuevo.
+   */
   crearServidor( nombre: string , iconUrl: string) {
     this.serversService.crearServidor(nombre, iconUrl).subscribe({
       next: () => {console.log('Servidor creado');
@@ -72,6 +118,10 @@ export class ServersPage implements OnInit {
       }
     });
   }
+
+  /**
+   * Elimina un servidor después de confirmar la acción.
+   */
     eliminarServidor(serverId: number) {
       if (!confirm('¿Estás seguro de que deseas eliminar este servidor?')) {
         return;
@@ -87,7 +137,9 @@ export class ServersPage implements OnInit {
       });
   }
 
-  /** Elimina miembro; serverId puede ser undefined y se valida internamente */
+  /**
+   * Elimina un miembro del servidor; el id del servidor se resuelve si no se pasa.
+   */
   eliminarMiembro(serverId: number | undefined, userId: string) {
     const sid = serverId ?? this.serversService.selectedServer()?.id;
     if (!sid) {
@@ -108,7 +160,9 @@ export class ServersPage implements OnInit {
     });
   }
 
-  /** Cambia rol de un miembro en el servidor seleccionado */
+  /**
+   * Cambia el rol de un miembro en el servidor seleccionado.
+   */
   cambiarRolMiembro(serverId: number | undefined, userId: string, newRole: string) {
     const sid = serverId ?? this.serversService.selectedServer()?.id;
     if (!sid) { console.warn('No hay servidor seleccionado para cambiar rol.'); return; }
@@ -118,7 +172,9 @@ export class ServersPage implements OnInit {
     });
   }
 
-  /** Pide datos al usuario y crea un servidor rápido (usar modal sería mejor) */
+  /**
+   * Abre prompts simples para crear un servidor rápido.
+   */
   promptCrearServidor() {
     const nombre = prompt('Nombre del nuevo servidor')?.trim();
     if (!nombre) return;
@@ -126,7 +182,9 @@ export class ServersPage implements OnInit {
     this.crearServidor(nombre, icon);
   }
 
-  /** Selecciona un canal: carga el canal y lo marca como seleccionado en el servicio */
+  /**
+   * Selecciona un canal y lo carga en el servicio.
+   */
   seleccionarCanal(channelId: number | undefined) {
     const sid = this.serversService.selectedServer()?.id;
     if (!sid || !channelId) { console.warn('Falta servidor o canal para seleccionar.'); return; }
@@ -138,7 +196,23 @@ export class ServersPage implements OnInit {
     });
   }
 
-  /** Elimina un canal y recarga la lista de canales */
+  /**
+   * Envía un mensaje al chat activo del canal seleccionado.
+   */
+  enviarMensaje(content: string) {
+    const conversation = this.chatService.currentConversation();
+
+    if (!conversation) {
+      console.warn('No hay conversación activa para enviar el mensaje.');
+      return;
+    }
+
+    this.chatService.sendMessage(conversation.id, content);
+  }
+
+  /**
+   * Elimina un canal y recarga la lista de canales.
+   */
   eliminarCanal(serverId: number | undefined, channelId: number) {
     const sid = serverId ?? this.serversService.selectedServer()?.id;
     if (!sid) { console.warn('No hay servidor seleccionado para eliminar canal.'); return; }
@@ -189,12 +263,16 @@ export class ServersPage implements OnInit {
     });
   }
 
-  /** Recibe eventos desde channel-list y crea un canal con el servidor actual */
+  /**
+   * Recibe eventos desde la lista de canales y crea un canal con el servidor actual.
+   */
   crearCanalDesdeLista(event: { name: string; categoryId?: number }) {
     this.crearCanal(undefined, event.name, event.categoryId);
   }
 
-  /** Elimina un canal usando el servidor seleccionado actual */
+  /**
+   * Elimina un canal usando el servidor seleccionado actual.
+   */
   eliminarCanalDesdeLista(channelId: number) {
     this.eliminarCanal(this.serversService.selectedServer()?.id, channelId);
   }

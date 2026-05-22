@@ -10,14 +10,14 @@ export class ChatHttpService {
   private readonly http = inject(HttpClient);
 
   /**
-   * Obtiene todas las conversaciones directas del usuario autenticado
+    * Obtiene todas las conversaciones directas del usuario autenticado.
    */
   getConversations(): Observable<ChatConversation[]> {
     return this.http.get<ChatConversation[]>(`${API_BASE_URL}/conversations/dm`);
   }
 
   /**
-   * Obtiene una conversación específica por ID
+    * Obtiene una conversación específica por ID.
    */
   getConversation(conversationId: number): Observable<ChatConversation> {
     return this.http.get<ChatConversation>(
@@ -26,7 +26,16 @@ export class ChatHttpService {
   }
 
   /**
-   * Crea o obtiene una conversación directa con otro usuario
+   * Obtiene la conversación asociada a un canal de servidor.
+   */
+  getChannelConversation(channelId: number): Observable<ChatConversation> {
+    return this.http.get<ChatConversation>(
+      `${API_BASE_URL}/conversations/channel/${channelId}`
+    );
+  }
+
+  /**
+    * Crea o recupera una conversación directa con otro usuario.
    */
   createOrGetConversation(targetUserId: string): Observable<ChatConversation> {
     return this.http.post<ChatConversation>(`${API_BASE_URL}/conversations/dm`, {
@@ -35,7 +44,7 @@ export class ChatHttpService {
   }
 
   /**
-   * Obtiene los mensajes de una conversación con paginación
+    * Obtiene los mensajes de una conversación con paginación.
    * @param conversationId ID de la conversación
    * @param cursor ID del último mensaje visto (null para primera página)
    * @param limit Cantidad de mensajes a recuperar (default 50)
@@ -62,7 +71,7 @@ export class ChatHttpService {
   }
 
   /**
-   * Obtiene el último mensaje de una conversación (para preview)
+    * Obtiene el último mensaje de una conversación para mostrarlo como vista previa.
    */
   getLastMessage(conversationId: number): Observable<ChatMessage | null> {
     return this.http.get<ChatMessage | null>(
@@ -71,7 +80,7 @@ export class ChatHttpService {
   }
 
   /**
-   * Envía un mensaje a una conversación
+    * Envía un mensaje a una conversación.
    */
   sendMessage(
     conversationId: number,
@@ -90,14 +99,14 @@ export class ChatHttpService {
   }
 
   /**
-   * Busca usuarios por nombre para iniciar nuevas conversaciones
+    * Busca usuarios por nombre para iniciar nuevas conversaciones.
    */
   searchUsers(username: string): Observable<any[]> {
     return this.http.get<any[]>(`${API_BASE_URL}/users/search?username=${username}`);
   }
 
   /**
-   * Obtiene el perfil de un usuario específico
+    * Obtiene el perfil de un usuario específico.
    */
   getUser(userId: string): Observable<any> {
     return this.http.get<any>(`${API_BASE_URL}/users/${userId}`);

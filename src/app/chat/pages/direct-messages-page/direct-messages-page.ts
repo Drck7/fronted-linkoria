@@ -20,11 +20,13 @@ export class DirectMessagesPage {
   private readonly route = inject(ActivatedRoute);
   private lastLoadedConversationId: number | null = null;
 
+  // Lee el parámetro de ruta (/chat/:username) para saber qué conversación abrir.
   private readonly selectedParam = toSignal(
     this.route.paramMap.pipe(map((params) => params.get('username'))),
     { initialValue: null },
   );
 
+  // Busca la conversación seleccionada por username (o por id si la URL trae un número).
   readonly selectedConversation = computed<ChatConversation | null>(() => {
     const conversations = this.chatService.conversations();
     const param = this.selectedParam();
@@ -43,6 +45,7 @@ export class DirectMessagesPage {
     ) ?? null;
   });
 
+  // Prioriza la conversación ya cargada en memoria para no perder mensajes recién recibidos.
   readonly activeConversation = computed(() => {
     const selectedConversation = this.selectedConversation();
     const currentConversation = this.chatService.currentConversation();
@@ -58,7 +61,7 @@ export class DirectMessagesPage {
   readonly error = this.chatService.error;
 
   constructor() {
-    // Cargar mensajes solo cuando cambia la conversación seleccionada
+    // Carga el historial solo cuando cambia la conversación en la URL.
     effect(() => {
       const conversation = this.selectedConversation();
 
@@ -69,6 +72,7 @@ export class DirectMessagesPage {
     });
   }
 
+  // Envía el mensaje escrito al chat activo.
   sendMessage(content: string): void {
     const conversation = this.activeConversation();
 

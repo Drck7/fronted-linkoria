@@ -17,14 +17,16 @@
           </div>
         </div>
 
-        <span
-          class="badge badge-outline"
-          [class.badge-success]="participant.status === 'online'"
-          [class.badge-warning]="participant.status === 'idle'"
-          [class.badge-ghost]="participant.status === 'offline'"
-        >
-          {{ participant.status }}
-        </span>
+        @if (participant.status) {
+          <span
+            class="badge badge-outline"
+            [class.badge-success]="participant.status === 'online'"
+            [class.badge-warning]="participant.status === 'idle'"
+            [class.badge-ghost]="participant.status === 'offline'"
+          >
+            {{ participant.status }}
+          </span>
+        }
       </header>
     }
 

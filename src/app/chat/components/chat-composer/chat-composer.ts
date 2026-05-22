@@ -3,6 +3,7 @@ import { FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angu
 
 @Component({
   selector: 'chat-composer',
+  standalone: true,
   imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './chat-composer.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -29,12 +29,16 @@
       <div class="chat-messages">
         <p *ngIf="!serversService.selectedServer()">No hay servidor seleccionado.</p>
         <p *ngIf="serversService.selectedServer() && !serversService.selectedChannel()">Selecciona un canal para ver el chat.</p>
-        <div *ngIf="serversService.selectedChannel()">Aquí irá la vista de mensajes del canal seleccionado.</div>
+
+        <ng-container *ngIf="serversService.selectedChannel() as channel">
+          <p *ngIf="!chatService.currentConversation()">Cargando conversación de #{{ channel.name }}...</p>
+
+          <chat-thread *ngIf="chatService.currentConversation() as conversation" [conversation]="conversation"></chat-thread>
+        </ng-container>
       </div>
 
       <footer class="chat-composer">
-        <input type="text" placeholder="Escribe un mensaje...">
-        <button>Enviar</button>
+        <chat-composer *ngIf="chatService.currentConversation()" (submitted)="enviarMensaje($event)"></chat-composer>
       </footer>
     </section>
   </main>
