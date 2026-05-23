@@ -2,6 +2,7 @@ export interface ChatMessage {
   messageId: number;
   conversationId: number;
   userId: string;
+  authorName?: string;
   content: string;
   messageType: 'TEXT' | 'IMAGE' | 'FILE' | 'VIDEO' | 'AUDIO';
   replyToMessageId: number | null;

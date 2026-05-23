@@ -77,12 +77,34 @@ export class MembersList {
   /** Lista de miembros del servidor */
   @Input() members: ServerMember[] = [];
 
+  /** Indica si el usuario actual puede ver y usar acciones de administración. */
+  @Input() puedeGestionar = false;
+
   /** Emite userId para expulsar */
   @Output() kickMember = new EventEmitter<string>();
 
   /** Emite { userId, newRole } para cambiar rol */
   @Output() changeRole = new EventEmitter<{ userId: string; newRole: string }>();
 
-  doKick(userId: string) { this.kickMember.emit(userId); }
-  doChangeRole(userId: string, newRole: string) { this.changeRole.emit({ userId, newRole }); }
+  /**
+   * Expulsa a un miembro solo cuando el usuario tiene permisos de owner.
+   */
+  doKick(userId: string) {
+    if (!this.puedeGestionar) {
+      return;
+    }
+
+    this.kickMember.emit(userId);
+  }
+
+  /**
+   * Alterna el rol de un miembro solo cuando el usuario tiene permisos de owner.
+   */
+  doChangeRole(userId: string, newRole: string) {
+    if (!this.puedeGestionar) {
+      return;
+    }
+
+    this.changeRole.emit({ userId, newRole });
+  }
 }

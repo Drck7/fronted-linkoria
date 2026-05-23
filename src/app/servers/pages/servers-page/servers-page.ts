@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, effect, inject, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { AuthService } from '../../../auth/services/auth.service';
 import { ChatComposerComponent } from '../../../chat/components/chat-composer/chat-composer';
 import { ChatThreadComponent } from '../../../chat/components/chat-thread/chat-thread';
 import { ChatService } from '../../../chat/services/chat.service';
@@ -16,6 +17,7 @@ import { MembersList } from '../../components/members-list/members-list';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class ServersPage implements OnInit {
+  private readonly authService = inject(AuthService);
   readonly serversService = inject(ServersService);
   readonly chatService = inject(ChatService);
   private readonly route = inject(ActivatedRoute);
@@ -48,6 +50,10 @@ export class ServersPage implements OnInit {
           console.error('Error al abrir la conversación del canal:', error);
         },
       });
+    });
+
+    effect(() => {
+      this.enrichCurrentConversationWithMemberNames();
     });
   }
 
@@ -89,6 +95,7 @@ export class ServersPage implements OnInit {
     this.serversService.obtenerIdServidor(serverId).subscribe({
       next:() => {
         this.serversService.obtenerMiembros(serverId).subscribe({
+          next: () => this.enrichCurrentConversationWithMemberNames(),
           error: (error) => { console.error('Error al cargar miembros del servidor:', error);
           }
         });
@@ -146,6 +153,10 @@ export class ServersPage implements OnInit {
       console.warn('No hay servidor seleccionado para eliminar miembro.');
       return;
     }
+    if (!this.esUsuarioPropietarioDelServidor()) {
+      console.warn('Solo el propietario del servidor puede expulsar miembros.');
+      return;
+    }
     if (!confirm('¿Estás seguro de que deseas eliminar a este miembro del servidor?')) {
       return;
     }
@@ -166,6 +177,10 @@ export class ServersPage implements OnInit {
   cambiarRolMiembro(serverId: number | undefined, userId: string, newRole: string) {
     const sid = serverId ?? this.serversService.selectedServer()?.id;
     if (!sid) { console.warn('No hay servidor seleccionado para cambiar rol.'); return; }
+    if (!this.esUsuarioPropietarioDelServidor()) {
+      console.warn('Solo el propietario del servidor puede cambiar roles.');
+      return;
+    }
     this.serversService.cambiarRolMiembro(sid, userId, newRole).subscribe({
       next: () => this.seleccionarServidor(sid),
       error: (err) => console.error('Error cambiando rol:', err)
@@ -275,6 +290,57 @@ export class ServersPage implements OnInit {
    */
   eliminarCanalDesdeLista(channelId: number) {
     this.eliminarCanal(this.serversService.selectedServer()?.id, channelId);
+  }
+
+  /**
+   * Comprueba si el usuario autenticado es el owner del servidor actualmente seleccionado.
+   */
+  public esUsuarioPropietarioDelServidor(): boolean {
+    const currentUserId = this.authService.user()?.userId;
+
+    if (!currentUserId) {
+      return false;
+    }
+
+    return this.serversService.serverMembers().some((member) => {
+      return member.userId === currentUserId && member.role.toLowerCase() === 'owner';
+    });
+  }
+
+  /**
+   * Asigna el nombre de usuario a los mensajes del canal usando los miembros del servidor.
+   */
+  private enrichCurrentConversationWithMemberNames(): void {
+    const conversation = this.chatService.currentConversation();
+    const selectedServer = this.serversService.selectedServer();
+
+    if (!conversation || !conversation.channelId || !selectedServer) {
+      return;
+    }
+
+    const messages = conversation.messages ?? [];
+    if (!messages.length) {
+      return;
+    }
+
+    const membersById = new Map(
+      this.serversService.serverMembers().map((member) => [member.userId, member.username]),
+    );
+
+    const enrichedMessages = messages.map((message) => ({
+      ...message,
+      authorName: membersById.get(message.userId) ?? message.authorName,
+    }));
+
+    const hasChanges = enrichedMessages.some((message, index) => message.authorName !== messages[index]?.authorName);
+    if (!hasChanges) {
+      return;
+    }
+
+    this.chatService.replaceCurrentConversation({
+      ...conversation,
+      messages: enrichedMessages,
+    });
   }
 
 

@@ -39,6 +39,12 @@
             [class.text-secondary-content]="message.isMine"
             [class.bg-base-100]="!message.isMine"
           >
+            @if (message.authorName) {
+              <p class="mb-1 text-[11px] font-semibold uppercase tracking-[0.18em] opacity-70">
+                {{ message.authorName }}
+              </p>
+            }
+
             <p class="text-sm leading-relaxed">{{ message.content }}</p>
             <span class="mt-2 block text-[11px] opacity-70">{{ message.sentAtLabel }}</span>
           </article>

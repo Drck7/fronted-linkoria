@@ -112,6 +112,17 @@ export class ChatService {
   }
 
   /**
+   * Reemplaza la conversación activa visible.
+   */
+  replaceCurrentConversation(conversation: ChatConversation): void {
+    this.currentConversationSignal.set(conversation);
+
+    this.conversationsSignal.update((conversations) => {
+      return conversations.map((existing) => (existing.id === conversation.id ? { ...existing, ...conversation } : existing));
+    });
+  }
+
+  /**
    * Devuelve la primera conversación ordenada por tiempo.
    */
   firstConversation(): ChatConversation | null {

@@ -7,7 +7,7 @@
 				<span>{{ m.username }}</span>
 				<small class="role">{{ m.role }}</small>
 			</div>
-			<div class="actions">
+			<div *ngIf="puedeGestionar" class="actions">
 				<button (click)="doChangeRole(m.userId, m.role === 'member' ? 'admin' : 'member')">Alternar rol</button>
 				<button (click)="doKick(m.userId)">Expulsar</button>
 			</div>

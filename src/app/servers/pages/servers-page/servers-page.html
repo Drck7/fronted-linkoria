@@ -57,6 +57,7 @@
 
     <members-list
       [members]="serversService.serverMembers()"
+      [puedeGestionar]="esUsuarioPropietarioDelServidor()"
       (kickMember)="eliminarMiembro(serversService.selectedServer()?.id, $event)"
       (changeRole)="cambiarRolMiembro(serversService.selectedServer()?.id, $event.userId, $event.newRole)"
     ></members-list>
