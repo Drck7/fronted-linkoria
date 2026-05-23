@@ -3,7 +3,9 @@
 <div class="flex h-[calc(100vh-64px)] overflow-hidden">
 
   <servers-navbar></servers-navbar>
-  <messages-navbar></messages-navbar>
+  @if (showMessagesNavbar()) {
+    <messages-navbar></messages-navbar>
+  }
   <main class="flex-1 bg-base-100 overflow-y-auto">
     <router-outlet></router-outlet>
   </main>

@@ -2,11 +2,12 @@ import { Component, inject, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { ServersService } from '../../../servers/services/servers.service';
 import { ServerList } from '../../../servers/components/server-list/server-list';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'servers-navbar',
   standalone: true,
-  imports: [ServerList],
+  imports: [ServerList, RouterLink],
   templateUrl: './servers-navbar.html',
   styles: ``,
 })

@@ -7,6 +7,16 @@ import { FormsModule, ReactiveFormsModule, FormControl, Validators } from '@angu
   imports: [FormsModule, ReactiveFormsModule],
   templateUrl: './chat-composer.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
+  styles: [`
+    :host {
+      display: block;
+      width: 100%;
+    }
+
+    form {
+      width: 100%;
+    }
+  `],
 })
 export class ChatComposerComponent {
   readonly submitted = output<string>();

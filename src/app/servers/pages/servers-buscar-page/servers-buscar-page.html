@@ -1,0 +1,33 @@
+<section class="flex h-full items-center justify-center bg-base-100 px-6 py-8 text-center">
+  <div class="w-full max-w-xl space-y-6 rounded-3xl border border-base-300 bg-base-200/90 p-8 shadow-xl shadow-black/10">
+    <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-[0.35em] text-primary/80">Servers</p>
+      <h1 class="text-3xl font-semibold text-base-content">Busca un Servidor!</h1>
+      <p class="text-base-content/60">
+        Introduce el código de invitación para unirte al servidor como Member.
+      </p>
+    </div>
+
+    <form class="space-y-4 text-left" (ngSubmit)="joinServer()">
+      <label class="form-control w-full">
+        <span class="label-text mb-2 text-sm font-medium text-base-content/80">Código del servidor</span>
+        <input
+          type="search"
+          name="inviteCode"
+          [(ngModel)]="inviteCode"
+          placeholder="Escribe el código aquí"
+          class="input input-bordered w-full"
+          autocomplete="off"
+        />
+      </label>
+
+      <div *ngIf="joinError()" class="rounded-2xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
+        {{ joinError() }}
+      </div>
+
+      <button class="btn btn-primary w-full" type="submit" [disabled]="isJoining()">
+        {{ isJoining() ? 'Uniéndote...' : 'Unirme al servidor' }}
+      </button>
+    </form>
+  </div>
+</section>

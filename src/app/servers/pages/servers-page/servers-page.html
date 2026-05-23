@@ -7,7 +7,12 @@
   <!-- CENTRO: canales + chat -->
   <main class="channels-and-chat">
     <nav class="channels-sidebar">
-      <h4>Canales</h4>
+      <h4 class="channels-title">
+        <span>Canales</span>
+        <span *ngIf="serversService.selectedServer()?.inviteCode as inviteCode" class="invite-code">
+          {{ inviteCode }}
+        </span>
+      </h4>
 
       <div *ngIf="serversService.loadingChannels()" class="loading">Cargando canales...</div>
       <div *ngIf="serversService.errorChannels()" class="error">Error canales: {{ serversService.errorChannels() }}</div>
@@ -102,6 +107,27 @@
   color: #f4f7ff;
 }
 
+.channels-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.invite-code {
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(93, 92, 255, 0.18);
+  border: 1px solid rgba(93, 92, 255, 0.35);
+  color: #dfe2ff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .chat-view {
   flex: 1;
   display: flex;
@@ -158,41 +184,17 @@
   flex: 1;
   padding: 16px;
   overflow: auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .chat-composer {
-  display: flex;
-  gap: 8px;
-  padding: 10px;
+  display: block;
+  padding: 10px 12px 12px;
   border-top: 1px solid rgba(130, 165, 232, 0.18);
   background: rgba(8, 12, 22, 0.62);
-}
-
-.chat-composer input {
-  flex: 1;
-  min-width: 0;
-  padding: 10px;
-  border: 1px solid rgba(130, 165, 232, 0.25);
-  border-radius: 10px;
-  background: rgba(15, 24, 40, 0.85);
-  color: var(--servers-ink);
-}
-
-.chat-composer input::placeholder {
-  color: #97a8cb;
-}
-
-.chat-composer button {
-  border: 0;
-  border-radius: 10px;
-  padding: 0 16px;
-  background: linear-gradient(135deg, var(--servers-accent) 0%, #8f74ff 100%);
-  color: #fff;
-  cursor: pointer;
-  box-shadow: 0 8px 20px var(--servers-accent-soft);
-}
-
-.chat-composer button:hover {
-  filter: brightness(1.06);
+  flex: 0 0 auto;
 }
 </style>

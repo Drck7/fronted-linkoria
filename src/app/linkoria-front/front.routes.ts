@@ -48,6 +48,10 @@ export const linkoriaFrontRoutes = [
         }
         ,
         {
+          path: 'servers-buscar',
+          loadChildren: () => import('../servers/servers-buscar.route')
+        },
+        {
           path: 'chat',
           loadChildren: () => import('../chat/chat.routes')
         },

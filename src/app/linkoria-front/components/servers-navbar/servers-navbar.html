@@ -1,9 +1,53 @@
 <!-- Barra de servidores usando el componente presentacional server-list -->
-<aside class="w-18 bg-base-300 flex flex-col items-center py-3 gap-2 border-r border-black/10 h-full">
+<aside class="servers-navbar w-18 bg-base-300 flex flex-col items-center py-3 gap-2 border-r border-black/10 h-full">
   <server-list
     [servers]="serversService.servers()"
     (selectServer)="onSelectServer($event)"
     (deleteServer)="onDeleteServer($event)"
     (createRequest)="onCreateRequest()"
   ></server-list>
+
+  <a
+    routerLink="/servers-buscar"
+    class="discover-btn"
+    title="Descubrir"
+    aria-label="Descubrir servidores"
+  >
+    <span class="discover-icon">⌕</span>
+  </a>
 </aside>
+
+<style>
+.servers-navbar {
+  padding-bottom: 16px;
+}
+
+.discover-btn {
+  width: 48px;
+  height: 48px;
+  border-radius: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: auto;
+  background: linear-gradient(135deg, rgba(93, 92, 255, 0.22), rgba(93, 92, 255, 0.38));
+  border: 1px solid rgba(93, 92, 255, 0.38);
+  color: #f4f7ff;
+  box-shadow: 0 10px 24px rgba(18, 24, 44, 0.28);
+  transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+  text-decoration: none;
+}
+
+.discover-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(18, 24, 44, 0.36);
+  filter: brightness(1.05);
+}
+
+.discover-icon {
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  transform: translateY(-1px);
+}
+</style>
