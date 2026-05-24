@@ -107,4 +107,18 @@ export class MembersList {
 
     this.changeRole.emit({ userId, newRole });
   }
+
+  /**
+   * Indica si un miembro es el propietario del servidor.
+   */
+  esMiembroPropietario(member: ServerMember): boolean {
+    return member.role?.toLowerCase() === 'owner';
+  }
+
+  /**
+   * Devuelve el siguiente rol editable para el botón de alternancia.
+   */
+  obtenerSiguienteRol(member: ServerMember): string {
+    return member.role?.toLowerCase() === 'member' ? 'ADMIN' : 'MEMBER';
+  }
 }
