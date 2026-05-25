@@ -267,8 +267,12 @@ export class ChatService {
    */
   private formatMessage(msg: ChatMessage): ChatMessage {
     const currentUser = this.authService.user();
+    // Ensure authorName is correct for messages sent by the current user
+    const authorName = msg.userId === currentUser?.userId ? currentUser?.username ?? msg.authorName : msg.authorName;
+
     return {
       ...msg,
+      authorName,
       isMine: msg.userId === currentUser?.userId,
       sentAtLabel: timeFormatter.format(new Date(msg.createdAt)),
     };
