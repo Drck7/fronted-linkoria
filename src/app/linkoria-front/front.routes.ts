@@ -1,6 +1,5 @@
 import { Routes } from "@angular/router"  ;
 import { LinkoriaFrontLayout } from "./layout/linkoria-front-layout/linkoria-front-layout";
-import { OnlinePage } from "./paginas/online-page/online-page";
 import { NotifyPage } from "./paginas/notify-pages/notify-pages";
 import { NotFoundPage } from "./paginas/not-found-page/not-found-page";
 import { HomePage } from "./paginas/home-page/home-page";
@@ -21,10 +20,6 @@ export const linkoriaFrontRoutes = [
         {
           path: 'users/all',
           component: HomePage
-        },
-        {
-          path: 'users/online',
-          component: OnlinePage
         },
         {
           path: 'users/search',
