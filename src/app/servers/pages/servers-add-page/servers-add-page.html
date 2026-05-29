@@ -1,0 +1,45 @@
+<section class="flex h-full items-center justify-center bg-base-100 px-6 py-8 text-center">
+  <div class="w-full max-w-xl space-y-6 rounded-3xl border border-base-300 bg-base-200/90 p-8 shadow-xl shadow-black/10">
+    <div class="space-y-2">
+      <p class="text-xs font-semibold uppercase tracking-[0.35em] text-primary/80">Servers</p>
+      <h1 class="text-3xl font-semibold text-base-content">Crea un Servidor</h1>
+      <p class="text-base-content/60">
+        Añade el nombre de tu servidor y, si quieres, una URL de icono para personalizarlo.
+      </p>
+    </div>
+
+    <form class="space-y-4 text-left" (ngSubmit)="createServer()">
+      <label class="form-control w-full">
+        <span class="label-text mb-2 text-sm font-medium text-base-content/80">Nombre del servidor</span>
+        <input
+          type="text"
+          name="serverName"
+          [(ngModel)]="serverName"
+          placeholder="Ej. Comunidad Linkoria"
+          class="input input-bordered w-full"
+          autocomplete="off"
+        />
+      </label>
+
+      <label class="form-control w-full">
+        <span class="label-text mb-2 text-sm font-medium text-base-content/80">URL del icono (opcional)</span>
+        <input
+          type="url"
+          name="iconUrl"
+          [(ngModel)]="iconUrl"
+          placeholder="https://..."
+          class="input input-bordered w-full"
+          autocomplete="off"
+        />
+      </label>
+
+      <div *ngIf="createError()" class="rounded-2xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
+        {{ createError() }}
+      </div>
+
+      <button class="btn btn-primary w-full" type="submit" [disabled]="isCreating()">
+        {{ isCreating() ? 'Creando servidor...' : 'Crear servidor' }}
+      </button>
+    </form>
+  </div>
+</section>

@@ -33,17 +33,8 @@ export class ServersNavbar implements OnInit {
   }
 
   onCreateRequest() {
-    const nombre = prompt('Nombre del servidor')?.trim();
-    if (!nombre) return;
-    const icon = prompt('URL icono (opcional)')?.trim() || '';
-    this.serversService.crearServidor(nombre, icon).subscribe({
-      next: (server) => {
-        if (!server) return;
-        this.router.navigate(['/servers', server.id]).catch(err => {
-          console.error('Error navegando al nuevo servidor:', err);
-        });
-      },
-      error: (err) => console.error('Error creando servidor desde navbar:', err)
+    this.router.navigate(['/servers-add']).catch(err => {
+      console.error('Error navegando a crear servidor:', err);
     });
   }
 }
