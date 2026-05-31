@@ -231,6 +231,10 @@ export class ServersPage implements OnInit {
   eliminarCanal(serverId: number | undefined, channelId: number) {
     const sid = serverId ?? this.serversService.selectedServer()?.id;
     if (!sid) { console.warn('No hay servidor seleccionado para eliminar canal.'); return; }
+    if (!this.puedeGestionarCanales()) {
+      console.warn('No tienes permisos para eliminar canales en este servidor.');
+      return;
+    }
     if (!confirm('¿Eliminar canal?')) return;
     this.serversService.eliminarCanal(sid, channelId).subscribe({
       next: (ok) => {
@@ -253,6 +257,10 @@ export class ServersPage implements OnInit {
     const resolvedServerId = serverId ?? this.serversService.selectedServer()?.id;
     if (!resolvedServerId) {
       console.warn('No hay servidor seleccionado para crear el canal.');
+      return;
+    }
+    if (!this.puedeGestionarCanales()) {
+      console.warn('No tienes permisos para crear canales en este servidor.');
       return;
     }
     if (!nombre || !nombre.trim()) {
@@ -296,15 +304,38 @@ export class ServersPage implements OnInit {
    * Comprueba si el usuario autenticado es el owner del servidor actualmente seleccionado.
    */
   public esUsuarioPropietarioDelServidor(): boolean {
+    return this.obtenerRolUsuarioActualEnServidor() === 'owner';
+  }
+
+  /**
+   * Comprueba si el usuario actual puede gestionar canales.
+   * OWNER y ADMIN pueden crear/eliminar; MEMBER no.
+   */
+  public puedeGestionarCanales(): boolean {
+    const role = this.obtenerRolUsuarioActualEnServidor();
+
+    return role === 'owner' || role === 'admin';
+  }
+
+  /**
+   * Devuelve el rol del usuario autenticado dentro del servidor seleccionado.
+   */
+  private obtenerRolUsuarioActualEnServidor(): string | null {
     const currentUserId = this.authService.user()?.userId;
 
     if (!currentUserId) {
-      return false;
+      return null;
     }
 
-    return this.serversService.serverMembers().some((member) => {
-      return member.userId === currentUserId && member.role.toLowerCase() === 'owner';
+    const member = this.serversService.serverMembers().find((serverMember) => {
+      return serverMember.userId === currentUserId;
     });
+
+    if (!member?.role) {
+      return null;
+    }
+
+    return member.role.toLowerCase();
   }
 
   /**

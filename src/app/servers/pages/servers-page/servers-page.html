@@ -19,6 +19,7 @@
 
       <app-channel-list
         [channels]="serversService.channels()"
+        [canManageChannels]="puedeGestionarCanales()"
         (selectChannel)="seleccionarCanal($event)"
         (createChannel)="crearCanalDesdeLista($event)"
         (deleteChannel)="eliminarCanalDesdeLista($event)"

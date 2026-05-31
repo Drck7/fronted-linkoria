@@ -33,7 +33,7 @@ export class ServersNavbar implements OnInit {
   }
 
   onCreateRequest() {
-    this.router.navigate(['/servers-add']).catch(err => {
+    this.router.navigate(['/servers/add']).catch(err => {
       console.error('Error navegando a crear servidor:', err);
     });
   }

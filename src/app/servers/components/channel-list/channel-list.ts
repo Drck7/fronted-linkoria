@@ -87,6 +87,9 @@ export class ChannelList {
   /** Lista de canales del servidor seleccionado */
   @Input() channels: Channel[] = [];
 
+  /** Controla si el usuario puede crear o eliminar canales */
+  @Input() canManageChannels = false;
+
   /** Emite el id del canal seleccionado */
   @Output() selectChannel = new EventEmitter<number>();
 
