@@ -9,6 +9,8 @@
     </div>
 
     <form class="space-y-4 text-left" (ngSubmit)="createServer()">
+      <input #iconInput class="hidden" accept="image/*" type="file" (change)="onIconFileSelected($event)" />
+
       <label class="form-control w-full">
         <span class="label-text mb-2 text-sm font-medium text-base-content/80">Nombre del servidor</span>
         <input
@@ -32,6 +34,26 @@
           autocomplete="off"
         />
       </label>
+
+      <div class="flex flex-wrap items-center gap-3">
+        <button class="btn btn-outline btn-sm" type="button" (click)="abrirSelectorIcono(iconInput)" [disabled]="isUploadingIcon()">
+          {{ isUploadingIcon() ? 'Subiendo icono...' : 'Subir icono' }}
+        </button>
+
+        @if (iconUploadError()) {
+          <span class="text-sm text-error">{{ iconUploadError() }}</span>
+        }
+      </div>
+
+      @if (iconUrl) {
+        <div class="flex items-center gap-3 rounded-2xl border border-base-300 bg-base-100 p-3">
+          <img [src]="iconUrl" alt="Vista previa del icono del servidor" class="h-12 w-12 rounded-xl object-cover" />
+          <div class="min-w-0">
+            <p class="text-sm font-medium text-base-content">Icono preparado</p>
+            <p class="truncate text-xs text-base-content/60">{{ iconUrl }}</p>
+          </div>
+        </div>
+      }
 
       <div *ngIf="createError()" class="rounded-2xl border border-error/30 bg-error/10 px-4 py-3 text-sm text-error">
         {{ createError() }}

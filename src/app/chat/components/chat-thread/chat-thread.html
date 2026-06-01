@@ -45,7 +45,18 @@
               </p>
             }
 
-            <p class="text-sm leading-relaxed">{{ message.content }}</p>
+            @if (message.messageType === 'IMAGE') {
+              <a [href]="message.content" target="_blank" rel="noopener noreferrer" class="block overflow-hidden rounded-2xl">
+                <img
+                  class="max-h-80 w-full rounded-2xl object-cover"
+                  [src]="message.content"
+                  [alt]="message.authorName ? 'Imagen enviada por ' + message.authorName : 'Imagen enviada'"
+                  loading="lazy"
+                />
+              </a>
+            } @else {
+              <p class="text-sm leading-relaxed">{{ message.content }}</p>
+            }
             <span class="mt-2 block text-[11px] opacity-70">{{ message.sentAtLabel }}</span>
           </article>
         </div>

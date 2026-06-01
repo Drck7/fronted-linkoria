@@ -207,14 +207,14 @@ export class ChatService {
   /**
     * Envía un mensaje por STOMP a la conversación activa.
    */
-    sendMessage(conversationId: number, content: string): void {
+    sendMessage(conversationId: number, content: string, messageType: 'TEXT' | 'IMAGE' = 'TEXT'): void {
     const text = content.trim();
 
     if (!text) {
       return;
     }
 
-      this.wsService.enviarMensaje(conversationId, text, 'TEXT', null);
+      this.wsService.enviarMensaje(conversationId, text, messageType, null);
   }
 
   /**
@@ -252,7 +252,7 @@ export class ChatService {
 
         return {
           ...conv,
-          lastMessagePreview: message.content.substring(0, 50),
+          lastMessagePreview: this.obtenerVistaPreviaMensaje(message),
           lastMessageLabel: timeFormatter.format(new Date(message.createdAt)),
           lastMessageAt: message.createdAt,
           unreadCount:
@@ -313,5 +313,21 @@ export class ChatService {
     return [...messages].sort((left, right) => {
       return new Date(left.createdAt).getTime() - new Date(right.createdAt).getTime();
     });
+  }
+
+  // Genera una vista previa compacta que no muestre una URL cruda para mensajes multimedia.
+  private obtenerVistaPreviaMensaje(message: ChatMessage): string {
+    switch (message.messageType) {
+      case 'IMAGE':
+        return 'Imagen';
+      case 'FILE':
+        return 'Archivo';
+      case 'VIDEO':
+        return 'Video';
+      case 'AUDIO':
+        return 'Audio';
+      default:
+        return message.content.substring(0, 50);
+    }
   }
 }

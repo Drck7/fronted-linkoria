@@ -23,6 +23,8 @@
           <div class="space-y-2">
             <p class="text-sm font-semibold uppercase tracking-[0.2em] text-base-content/50">Perfil propio</p>
             @if (editar()) {
+              <input #avatarInput class="hidden" accept="image/*" type="file" (change)="onAvatarFileSelected($event)" />
+
               <form class="grid gap-3" [formGroup]="profileForm">
                 <label class="form-control w-full max-w-md">
                   <div class="label">
@@ -37,6 +39,16 @@
                   </div>
                   <input class="input input-bordered w-full" formControlName="avatarUrl" type="url" />
                 </label>
+
+                <div class="flex flex-wrap items-center gap-3">
+                  <button class="btn btn-outline btn-sm" type="button" (click)="abrirSelectorAvatar(avatarInput)" [disabled]="isUploadingAvatar()">
+                    {{ isUploadingAvatar() ? 'Subiendo avatar...' : 'Subir avatar' }}
+                  </button>
+
+                  @if (avatarUploadError()) {
+                    <span class="text-sm text-error">{{ avatarUploadError() }}</span>
+                  }
+                </div>
               </form>
             } @else {
               <h1 class="text-3xl font-bold">{{ user.username }}</h1>

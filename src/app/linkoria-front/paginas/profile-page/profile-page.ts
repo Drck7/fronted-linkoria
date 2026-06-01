@@ -1,8 +1,10 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, computed, effect, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../../auth/services/auth.service';
 import { UserProfile, UserService } from '../../../shared/services/user.service';
+import { ImageUploadService } from '../../../shared/services/image-upload.service';
 
 @Component({
   selector: 'profile-page',
@@ -15,6 +17,8 @@ export class ProfilePage {
   private readonly authService = inject(AuthService);
   // Servicio de usuarios: lee y actualiza el perfil desde el backend.
   private readonly userService = inject(UserService);
+  // Servicio compartido de imágenes: sube archivos a Supabase y devuelve la URL pública.
+  private readonly imageUploadService = inject(ImageUploadService);
 
   // Perfil completo cargado desde el backend.
   readonly profile = signal<UserProfile | null>(null);
@@ -24,6 +28,10 @@ export class ProfilePage {
   readonly error = signal<string | null>(null);
   // Controla si el formulario está en modo edición.
   readonly editar = signal(false);
+  // Indica si se está subiendo un avatar desde el selector de archivos.
+  readonly isUploadingAvatar = signal(false);
+  // Mensaje de error específico de la subida de avatar.
+  readonly avatarUploadError = signal<string | null>(null);
 
   readonly currentUser = computed(() => this.authService.user());
   readonly currentUserId = computed(() => this.currentUser()?.userId ?? null);
@@ -126,6 +134,46 @@ export class ProfilePage {
       error: () => {
         this.error.set('No se pudo actualizar tu perfil.');
         this.loading.set(false);
+      },
+    });
+  }
+
+  // Abre el selector de archivos para elegir un avatar nuevo.
+  abrirSelectorAvatar(inputFile: HTMLInputElement): void {
+    inputFile.click();
+  }
+
+  // Sube el avatar a Supabase y deja la URL lista en el formulario.
+  onAvatarFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0] ?? null;
+
+    input.value = '';
+
+    if (!file) {
+      return;
+    }
+
+    if (!file.type.startsWith('image/')) {
+      this.avatarUploadError.set('Selecciona una imagen válida para el avatar.');
+      return;
+    }
+
+    this.avatarUploadError.set(null);
+    this.isUploadingAvatar.set(true);
+
+    this.imageUploadService.subirImagen(file, 'perfiles').pipe(
+      finalize(() => this.isUploadingAvatar.set(false))
+    ).subscribe({
+      next: (imageUrl) => {
+        this.profileForm.patchValue({
+          avatarUrl: imageUrl,
+        });
+        this.editar.set(true);
+      },
+      error: (error) => {
+        console.error('Error al subir avatar:', error);
+        this.avatarUploadError.set('No se pudo subir el avatar. Inténtalo de nuevo.');
       },
     });
   }

@@ -1,5 +1,17 @@
 <form class="border-t border-black/5 bg-base-100 p-4" (ngSubmit)="submit()">
+  <input #imageInput class="hidden" accept="image/*" type="file" (change)="onImageSelected($event)" />
+
+  @if (uploadError()) {
+    <div class="mb-3 rounded-2xl border border-error/30 bg-error/10 px-4 py-2 text-sm text-error">
+      {{ uploadError() }}
+    </div>
+  }
+
   <div class="flex items-end gap-3 rounded-3xl border border-black/10 bg-base-200 px-4 py-3">
+    <button type="button" class="btn btn-ghost btn-sm self-end" (click)="abrirSelectorImagen(imageInput)" [disabled]="isUploadingImage()" aria-label="Subir imagen">
+      {{ isUploadingImage() ? 'Subiendo...' : 'Imagen' }}
+    </button>
+
     <textarea
       class="textarea textarea-ghost min-h-14 flex-1 resize-none p-0 text-base focus:outline-none"
       [formControl]="message"
@@ -8,7 +20,7 @@
       aria-label="Escribe un mensaje"
     ></textarea>
 
-    <button type="submit" class="btn btn-secondary btn-sm self-end" [disabled]="message.invalid || !message.value.trim()">
+    <button type="submit" class="btn btn-secondary btn-sm self-end" [disabled]="message.invalid || !message.value.trim() || isUploadingImage()">
       Enviar
     </button>
   </div>

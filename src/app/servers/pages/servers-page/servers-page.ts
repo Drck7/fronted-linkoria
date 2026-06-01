@@ -214,7 +214,7 @@ export class ServersPage implements OnInit {
   /**
    * Envía un mensaje al chat activo del canal seleccionado.
    */
-  enviarMensaje(content: string) {
+  enviarMensaje(payload: { content: string; messageType: 'TEXT' | 'IMAGE' }) {
     const conversation = this.chatService.currentConversation();
 
     if (!conversation) {
@@ -222,7 +222,7 @@ export class ServersPage implements OnInit {
       return;
     }
 
-    this.chatService.sendMessage(conversation.id, content);
+    this.chatService.sendMessage(conversation.id, payload.content, payload.messageType);
   }
 
   /**

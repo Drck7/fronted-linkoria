@@ -1,0 +1,3 @@
+export const SUPABASE_URL = 'https://trtpzsexfehwiiiknxph.supabase.co';
+export const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRydHB6c2V4ZmVod2lpaWtueHBoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzgxNTk5MTAsImV4cCI6MjA5MzczNTkxMH0.OevSA7wyw2A_hGDZoTZAZfy-LUpyLhjva9ieDPpcW98';
+export const SUPABASE_BUCKET = 'linkoria-imagenes-web';

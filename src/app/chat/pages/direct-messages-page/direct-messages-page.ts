@@ -73,13 +73,13 @@ export class DirectMessagesPage {
   }
 
   // Envía el mensaje escrito al chat activo.
-  sendMessage(content: string): void {
+  sendMessage(payload: { content: string; messageType: 'TEXT' | 'IMAGE' }): void {
     const conversation = this.activeConversation();
 
     if (!conversation) {
       return;
     }
 
-    this.chatService.sendMessage(conversation.id, content);
+    this.chatService.sendMessage(conversation.id, payload.content, payload.messageType);
   }
 }
