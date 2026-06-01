@@ -18,10 +18,18 @@
           >
             <div class="flex w-full items-center gap-3">
               <div class="avatar">
-                <div class="w-10 rounded-full bg-secondary text-secondary-content">
-                  <span class="text-xs font-bold">
-                    {{ (conversation.participant?.username ?? 'C').slice(0, 1).toUpperCase() }}
-                  </span>
+                <div class="w-10 rounded-full bg-secondary text-secondary-content overflow-hidden">
+                  @if (conversation.participant?.avatarUrl) {
+                    <img
+                      [src]="conversation.participant?.avatarUrl"
+                      [alt]="conversation.participant?.username || 'Usuario'"
+                      class="h-full w-full object-cover"
+                    />
+                  } @else {
+                    <span class="text-xs font-bold">
+                      {{ (conversation.participant?.username ?? 'C').slice(0, 1).toUpperCase() }}
+                    </span>
+                  }
                 </div>
               </div>
 
@@ -36,7 +44,7 @@
                     <span class="badge badge-secondary badge-sm">{{ conversation.unreadCount }}</span>
                   }
                 </div>
-                <p class="truncate text-xs text-base-content/60">{{ conversation.lastMessagePreview ?? 'Sin mensajes' }}</p>
+                <!-- <p class="truncate text-xs text-base-content/60">{{ conversation.lastMessagePreview ?? 'Sin mensajes' }}</p> -->
               </div>
             </div>
           </a>

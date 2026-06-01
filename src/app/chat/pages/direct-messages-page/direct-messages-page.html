@@ -1,11 +1,11 @@
-<section class="flex h-full flex-col">
+<section class="flex h-full min-h-0 flex-col overflow-hidden">
   @if (activeConversation(); as conversation) {
-    <chat-thread [conversation]="conversation"></chat-thread>
+    <chat-thread class="flex-1 min-h-0 overflow-hidden" [conversation]="conversation"></chat-thread>
 
     @if (authService.authStatus() === 'authenticated') {
-      <chat-composer (submitted)="sendMessage($event)"></chat-composer>
+      <chat-composer class="shrink-0" (submitted)="sendMessage($event)"></chat-composer>
     } @else {
-      <div class="border-t border-black/5 bg-base-100 p-4">
+      <div class="shrink-0 border-t border-black/5 bg-base-100 p-4">
         <div class="rounded-3xl border border-dashed border-black/10 bg-base-200 px-4 py-5 text-center">
           <p class="font-medium text-base-content">Inicia sesión para responder en este chat.</p>
           <a class="btn btn-primary btn-sm mt-3" routerLink="/auth/login">Ir al login</a>

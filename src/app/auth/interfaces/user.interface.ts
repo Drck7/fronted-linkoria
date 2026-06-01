@@ -7,6 +7,10 @@ export interface User {
   userId: string;
   /** Nombre de usuario para mostrar en la interfaz */
   username: string;
+  /** URL del avatar del usuario */
+  avatarUrl?: string;
+  /** Breve biografía del usuario */
+  bio?: string;
   /** Tipo de autenticacion (ej: "Bearer") */
   tokenType: string;
 

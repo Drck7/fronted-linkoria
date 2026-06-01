@@ -93,7 +93,13 @@ export class ServersPage implements OnInit {
    */
   seleccionarServidor( serverId: number) {
     this.serversService.obtenerIdServidor(serverId).subscribe({
-      next:() => {
+      next: (server) => {
+        // Si el backend devolvió null o no encontró el servidor, no intentar cargar recursos relacionados.
+        if (!server) {
+          console.warn('Servidor no encontrado en backend, abortando carga de miembros/canales/categorías.');
+          return;
+        }
+
         this.serversService.obtenerMiembros(serverId).subscribe({
           next: () => this.enrichCurrentConversationWithMemberNames(),
           error: (error) => { console.error('Error al cargar miembros del servidor:', error);

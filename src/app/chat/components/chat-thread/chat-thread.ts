@@ -8,10 +8,11 @@ import { ChatConversation } from '../../interfaces/chat-conversation.interface';
   changeDetection: ChangeDetectionStrategy.OnPush,
   styles: [`
     :host {
-      display: block;
+      display: flex;
+      flex: 1 1 auto;
       width: 100%;
-      height: 100%;
       min-width: 0;
+      min-height: 0;
     }
   `],
 })

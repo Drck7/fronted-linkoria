@@ -46,9 +46,20 @@
   <!-- Datos y boton de login del usuario -->
   <div class="navbar-end gap-4">
     @if(authService.authStatus() === 'authenticated') {
-      <button class="btn btn-ghost"  routerLink="/profile" routerLinkActive="text-secondary"  >
-        {{ authService.user()?.username }}
-      </button>
+      <a class="btn btn-ghost gap-2" routerLink="/profile" routerLinkActive="text-secondary">
+        <div class="avatar">
+          <div class="w-8 rounded-full bg-secondary text-secondary-content overflow-hidden">
+            @if (authService.user()?.avatarUrl) {
+              <img [src]="authService.user()?.avatarUrl || fallbackAvatarUrl" [alt]="authService.user()?.username || 'Usuario'" />
+            } @else {
+              <span class="text-xs font-bold">
+                {{ (authService.user()?.username || 'U').slice(0, 1).toUpperCase() }}
+              </span>
+            }
+          </div>
+        </div>
+        <span>{{ authService.user()?.username }}</span>
+      </a>
       <button class="btn btn-sm btn-error" (click)="authService.clearSession()">
         Salir
       </button>

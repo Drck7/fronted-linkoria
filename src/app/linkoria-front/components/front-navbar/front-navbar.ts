@@ -10,4 +10,6 @@ import { AuthService } from '../../../auth/services/auth.service';
 export class FrontNavbar {
 
   authService = inject(AuthService)
+
+  readonly fallbackAvatarUrl = 'https://img.daisyui.com/images/profile/demo/gordon@192.webp';
 }

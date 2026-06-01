@@ -46,6 +46,7 @@ export interface UpdateUserProfileRequest {
   username?: string;
   email?: string;
   avatarUrl?: string;
+  bio?: string;
 }
 
 function normalizeUser(rawUser: RawUserResponse, fallbackId: string): UserProfile {

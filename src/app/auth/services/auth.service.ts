@@ -3,6 +3,7 @@ import { User } from '../interfaces/user.interface';
 import { HttpClient } from '@angular/common/http';
 import { AuthResponse } from '../interfaces/auth-response.interface';
 import { catchError, mapTo, Observable, of, tap } from 'rxjs'
+import { UserService } from '../../shared/services/user.service';
 
 // Estados posibles de autenticación.
 type AuthStatus = 'checking' | 'authenticated' | 'not-authenticated'
@@ -31,6 +32,7 @@ export class AuthService {
   private _token = signal<string | null>(localStorage.getItem('token') )
 
   private http = inject(HttpClient)
+  private readonly userService = inject(UserService)
 
   authStatus= computed<AuthStatus>(() => {
     if(this._authStatus() === 'checking') return 'checking'
@@ -89,6 +91,7 @@ export class AuthService {
     localStorage.setItem(userStorageKey, JSON.stringify(user));
     localStorage.setItem('token', resp.accessToken);
     localStorage.setItem('refreshToken', resp.refreshToken);
+    this.syncCurrentUserProfile(user.userId);
   }
 
   // Restaura el token nuevo devuelto por refresh sin perder el usuario ya guardado localmente.
@@ -100,6 +103,25 @@ export class AuthService {
     this._token.set(resp.accessToken);
     localStorage.setItem('token', resp.accessToken);
     localStorage.setItem('refreshToken', resp.refreshToken);
+
+    if (storedUser) {
+      this.syncCurrentUserProfile(storedUser.userId);
+    }
+  }
+
+  private syncCurrentUserProfile(userId: string): void {
+    this.userService.getUserProfile(userId).subscribe({
+      next: (profile) => {
+        this.updateCurrentUser({
+          username: profile.username,
+          avatarUrl: profile.avatarUrl,
+          bio: profile.bio,
+        });
+      },
+      error: () => {
+        // Si falla la sincronización del perfil, mantenemos la sesión básica activa.
+      },
+    });
   }
 
 

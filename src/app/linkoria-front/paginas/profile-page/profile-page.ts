@@ -40,6 +40,7 @@ export class ProfilePage {
   readonly profileForm = new FormGroup({
     username: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(3)] }),
     avatarUrl: new FormControl('', { nonNullable: true }),
+    bio: new FormControl('', { nonNullable: true }),
   });
 
   constructor() {
@@ -61,7 +62,8 @@ export class ProfilePage {
           this.profile.set(profile);
           this.profileForm.setValue({
             username: profile.username,
-            avatarUrl: profile.avatarUrl ?? '',
+              avatarUrl: profile.avatarUrl ?? '',
+              bio: profile.bio ?? '',
           });
           this.loading.set(false);
         },
@@ -86,6 +88,7 @@ export class ProfilePage {
     this.profileForm.setValue({
       username: profile.username,
       avatarUrl: profile.avatarUrl ?? '',
+      bio: profile.bio ?? '',
     });
     this.editar.set(true);
     this.error.set(null);
@@ -98,6 +101,7 @@ export class ProfilePage {
       this.profileForm.setValue({
         username: profile.username,
         avatarUrl: profile.avatarUrl ?? '',
+        bio: profile.bio ?? '',
       });
     }
 
@@ -118,6 +122,7 @@ export class ProfilePage {
     const payload = {
       username: this.profileForm.value.username?.trim(),
       avatarUrl: this.profileForm.value.avatarUrl?.trim() || undefined,
+      bio: this.profileForm.value.bio?.trim() || undefined,
     };
 
     this.userService.updateUserProfile(userId, payload).subscribe({
@@ -126,8 +131,13 @@ export class ProfilePage {
         this.profileForm.setValue({
           username: updatedProfile.username,
           avatarUrl: updatedProfile.avatarUrl ?? '',
+          bio: updatedProfile.bio ?? '',
         });
-        this.authService.updateCurrentUser({ username: updatedProfile.username });
+        this.authService.updateCurrentUser({
+          username: updatedProfile.username,
+          avatarUrl: updatedProfile.avatarUrl,
+          bio: updatedProfile.bio,
+        });
         this.editar.set(false);
         this.loading.set(false);
       },

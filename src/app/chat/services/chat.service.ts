@@ -44,7 +44,7 @@ export class ChatService {
   getConversationRoute(conversation: ChatConversation): string[] {
     const username = conversation.participant?.username?.trim();
     return username ? ['/chat', username] : [];
-  }  
+  }
   readonly currentConversation = this.currentConversationSignal.asReadonly();
   readonly isLoading = this.loadingSignal.asReadonly();
   readonly error = this.errorSignal.asReadonly();

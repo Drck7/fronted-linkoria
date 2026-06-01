@@ -42,8 +42,16 @@
           class="flex items-center justify-between p-2 rounded-lg hover:bg-base-content/5 group cursor-pointer transition-colors active:scale-95">
           <div class="flex items-center gap-3 flex-1">
             <div class="avatar">
-              <div class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center">
-                <span class="text-sm font-bold">{{ (amigo.username || 'U').slice(0, 1).toUpperCase() }}</span>
+              <div class="w-10 rounded-full bg-secondary text-secondary-content flex items-center justify-center overflow-hidden">
+                @if (amigo.avatarUrl) {
+                  <img
+                    [src]="amigo.avatarUrl"
+                    [alt]="amigo.username || 'Usuario'"
+                    class="h-full w-full object-cover"
+                  />
+                } @else {
+                  <span class="text-sm font-bold">{{ (amigo.username || 'U').slice(0, 1).toUpperCase() }}</span>
+                }
               </div>
             </div>
             <div class="flex flex-col flex-1 min-w-0">
@@ -62,8 +70,8 @@
           <!-- Dropdown menu para opciones -->
           <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity" (click)="$event.stopPropagation()">
             <div class="dropdown dropdown-end">
-              <button class="btn btn-circle btn-sm btn-ghost" (click)="$event.stopPropagation()">⋮</button>
-              <ul class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow">
+              <label tabindex="0" class="btn btn-circle btn-sm btn-ghost">⋮</label>
+              <ul tabindex="0" class="dropdown-content menu bg-base-100 rounded-box z-1 w-52 p-2 shadow">
                 <li>
                   <a (click)="verPerfil(amigo.userId); $event.stopPropagation()">👤 Ver perfil</a>
                 </li>
