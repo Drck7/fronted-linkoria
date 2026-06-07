@@ -38,7 +38,7 @@
       </header>
     }
 
-    <div class="flex-1 space-y-3 overflow-y-auto bg-base-200/40 px-6 py-5">
+    <div #scrollContainer class="flex-1 space-y-3 overflow-y-auto bg-base-200/40 px-6 py-5">
       @for (message of conversation.messages; track message.messageId) {
         <div class="flex" [class.justify-end]="message.isMine">
           <article
