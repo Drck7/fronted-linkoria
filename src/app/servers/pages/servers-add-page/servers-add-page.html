@@ -23,17 +23,6 @@
         />
       </label>
 
-      <label class="form-control w-full">
-        <span class="label-text mb-2 text-sm font-medium text-base-content/80">URL del icono (opcional)</span>
-        <input
-          type="url"
-          name="iconUrl"
-          [(ngModel)]="iconUrl"
-          placeholder="https://..."
-          class="input input-bordered w-full"
-          autocomplete="off"
-        />
-      </label>
 
       <div class="flex flex-wrap items-center gap-3">
         <button class="btn btn-outline btn-sm" type="button" (click)="abrirSelectorIcono(iconInput)" [disabled]="isUploadingIcon()">
