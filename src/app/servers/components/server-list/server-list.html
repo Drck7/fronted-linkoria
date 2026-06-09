@@ -13,7 +13,7 @@
   <ul class="server-items">
     <li *ngFor="let s of servers" class="server-item" (click)="onSelect(s.id)">
       <div class="server-card">
-        <img *ngIf="s.iconUrl" [src]="s.iconUrl" [alt]="s.name" width="28" height="28">
+        <img *ngIf="s.iconUrl" [src]="s.iconUrl" [alt]="s.name" class="h-full w-full object-cover" />
         <span *ngIf="!s.iconUrl" class="server-fallback">{{ s.name.slice(0, 1) }}</span>
       </div>
 
